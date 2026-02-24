@@ -14,7 +14,7 @@ class Item extends Model
     protected $casts = [
         'status' => ItemStatus::class,
     ];
-    
+
     protected function casts(): array
     {
         return [
