@@ -25,7 +25,7 @@ return new class extends Migration
                   ->default('siswa');
 
             // Khusus sekolah
-            $table->string('kelas')->nullable(); // contoh: XI RPL 1
+            $table->string('kelas')->nullable(); // contoh: XI RPL 
             $table->string('no_hp')->nullable();
 
             // Foto profil
