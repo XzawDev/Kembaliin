@@ -121,4 +121,14 @@ class Item extends Model
     {
         return $query->where('status', self::STATUS_DITITIPKAN);
     }
+
+    public function addHistory($action, $description = null)
+    {
+        return ItemHistory::create([
+            'item_id' => $this->id,
+            'user_id' => auth()->id(),
+            'action' => $action,
+            'description' => $description,
+        ]);
+    }
 }
