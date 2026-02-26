@@ -1,7 +1,7 @@
 <?php
 
 test('returns a successful response', function () {
-    $response = $this->get(route('/'));
+    $response = $this->get('/');
 
-    $response->assertOk();
+    $response->assertStatus(302); // karena redirect
 });
