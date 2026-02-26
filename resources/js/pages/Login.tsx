@@ -1,7 +1,10 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function Login() {
+   
+    const [showInfo, setShowInfo] = useState(false);
+
     const { data, setData, post, processing, errors } = useForm({
         email: '',
         password: '',
@@ -13,102 +16,151 @@ export default function Login() {
     };
 
     return (
-        // Background utama warna abu-abu khas Apple (#F5F5F7)
-        <div className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] font-sans flex items-center justify-center p-4 sm:p-8">
+        <div className="min-h-screen bg-[#F4F7F6] flex items-center justify-center p-4 sm:p-8 font-sans">
             <Head title="Masuk - Kembaliin" />
 
-            {/* BENTO GRID CONTAINER */}
-            <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 auto-rows-fr">
+            {}
+            <div className="flex flex-col md:flex-row w-full max-w-[1100px] min-h-[600px] bg-white rounded-[2rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden relative">
                 
-                {/* BENTO BOX 1: HERO / BRANDING (Kotak Lebar - 2 Kolom) */}
-                <div className="md:col-span-2 bg-white rounded-[2.5rem] p-8 sm:p-10 flex flex-col justify-between shadow-sm border border-gray-100 overflow-hidden relative group">
-                    {/* Efek gradient tipis di pojok untuk estetika */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -z-10 group-hover:bg-blue-500/10 transition-all duration-700"></div>
+                {}
+                <div className="w-full md:w-1/2 p-10 sm:p-14 flex flex-col justify-center bg-white relative z-10">
                     
-                    <div>
-                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-[1.2rem] bg-black text-white mb-8 shadow-md">
-                            {/* Ikon Koper/Barang */}
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 10.5b0 0-0 8.25m-16.5 0v8.25m-16.5-8.25H3.75m16.5 0H20.25m-16.5 0a2.25 2.25 0 00-2.25 2.25v6a2.25 2.25 0 002.25 2.25h16.5a2.25 2.25 0 002.25-2.25v-6a2.25 2.25 0 00-2.25-2.25H3.75z" />
+                    {}
+                    <div className="flex items-center gap-3 mb-10">
+                        <div className="relative flex items-center justify-center w-12 h-12">
+                            {}
+                            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-teal-800 drop-shadow-sm">
+                                <path d="M24 4C16.268 4 10 10.268 10 18C10 28.5 24 44 24 44C24 44 38 28.5 38 18C38 10.268 31.732 4 24 4Z" fill="currentColor"/>
+                                <path d="M24 11C20.134 11 17 14.134 17 18C17 19.933 17.784 21.683 19.05 22.95L24 28L28.95 22.95C30.216 21.683 31 19.933 31 18C31 14.134 27.866 11 24 11ZM24 24C22.343 24 21 22.657 21 21H23V16L18 21L23 26V23C25.761 23 28 20.761 28 18H26C26 19.105 25.105 20 24 20V24Z" fill="white"/>
                             </svg>
                         </div>
-                        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">
-                            Platform pintar untuk <br className="hidden sm:block"/> barang hilangmu.
-                        </h1>
-                        <p className="text-gray-500 text-lg max-w-md font-medium leading-relaxed">
-                            Kembaliin dirancang dengan sistem yang aman untuk memudahkan pelaporan dan penemuan barang di lingkungan sekolah.
-                        </p>
-                    </div>
-                </div>
-
-                {/* BENTO BOX 2: FORM LOGIN (Kotak Tinggi - 2 Baris) */}
-                <div className="md:col-span-1 md:row-span-2 bg-white rounded-[2.5rem] p-8 sm:p-10 shadow-sm border border-gray-100 flex flex-col relative z-10">
-                    <div className="mb-8">
-                        <h2 className="text-2xl font-bold tracking-tight mb-2">Masuk</h2>
-                        <p className="text-gray-500 text-sm font-medium">Gunakan akun yang terdaftar</p>
+                        <span className="font-extrabold text-3xl text-slate-800 tracking-tight">Kembaliin.</span>
                     </div>
 
-                    <form onSubmit={submit} className="flex-1 flex flex-col justify-center space-y-5">
-                        {/* Input Email dengan desain Soft Gray */}
+                    <h1 className="text-4xl font-extrabold text-slate-900 mb-3 tracking-tight">Selamat Datang!</h1>
+                    <p className="text-slate-500 mb-8 font-medium">Silakan masuk untuk melapor atau mencari barangmu.</p>
+
+                    <form onSubmit={submit} className="space-y-5">
+                        {}
                         <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1" htmlFor="email">
+                                Alamat Email
+                            </label>
                             <input
                                 id="email"
                                 type="email"
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
-                                className="w-full px-5 py-4 rounded-2xl bg-[#F5F5F7] border-2 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-[#1D1D1F] placeholder-gray-400 font-semibold"
-                                placeholder="Alamat Email"
+                                className="w-full px-5 py-4 rounded-xl bg-white border-2 border-slate-200 focus:bg-slate-50 focus:border-teal-700 focus:ring-4 focus:ring-teal-700/10 transition-all outline-none text-slate-800 placeholder-slate-400 font-medium"
+                                placeholder="nama@siswa.com"
                                 required
                             />
-                            {errors.email && <p className="text-red-500 text-sm mt-2 ml-2 font-medium">{errors.email}</p>}
+                            {errors.email && <p className="text-red-500 text-sm mt-2 ml-1 font-medium">{errors.email}</p>}
                         </div>
 
-                        {/* Input Password */}
+                        {}
                         <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1" htmlFor="password">
+                                Password
+                            </label>
                             <input
                                 id="password"
                                 type="password"
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
-                                className="w-full px-5 py-4 rounded-2xl bg-[#F5F5F7] border-2 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-[#1D1D1F] placeholder-gray-400 font-semibold"
-                                placeholder="Password"
+                                className="w-full px-5 py-4 rounded-xl bg-white border-2 border-slate-200 focus:bg-slate-50 focus:border-teal-700 focus:ring-4 focus:ring-teal-700/10 transition-all outline-none text-slate-800 placeholder-slate-400 font-medium"
+                                placeholder="••••••••"
                                 required
                             />
-                            {errors.password && <p className="text-red-500 text-sm mt-2 ml-2 font-medium">{errors.password}</p>}
+                            {errors.password && <p className="text-red-500 text-sm mt-2 ml-1 font-medium">{errors.password}</p>}
                         </div>
 
-                        {/* Tombol Hitam Elegan */}
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="w-full py-4 mt-6 bg-[#1D1D1F] text-white text-lg font-bold rounded-2xl shadow-lg shadow-gray-300/50 hover:bg-black hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-70 disabled:hover:scale-100 flex justify-center items-center"
-                        >
-                            {processing ? 'Memproses...' : 'Lanjutkan'}
-                        </button>
+                        <div className="flex items-center justify-between mt-2 mb-6 px-1">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-teal-700 focus:ring-teal-700" />
+                                <span className="text-sm font-medium text-slate-600">Ingat saya</span>
+                            </label>
+                            <a href="#" className="text-sm font-bold text-teal-700 hover:text-teal-600 transition-colors">
+                                Lupa password?
+                            </a>
+                        </div>
+
+                        {}
+                        <div className="flex flex-col sm:flex-row gap-4 mt-8">
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="flex-1 py-4 bg-teal-800 text-white text-lg font-bold rounded-xl shadow-lg shadow-teal-900/20 hover:bg-teal-900 active:scale-[0.98] transition-all duration-200 disabled:opacity-70"
+                            >
+                                {processing ? 'Memproses...' : 'Masuk'}
+                            </button>
+                            
+                            <Link
+                                href="/register"
+                                className="flex-1 py-4 bg-white text-teal-800 border-2 border-teal-800 text-lg font-bold rounded-xl hover:bg-teal-50 active:scale-[0.98] transition-all duration-200 text-center flex items-center justify-center"
+                            >
+                                Buat akun
+                            </Link>
+                        </div>
                     </form>
                 </div>
 
-                {/* BENTO BOX 3: INFO KEAMANAN (Kotak Kecil Kiri Bawah) - Mode Gelap */}
-                <div className="bg-[#1D1D1F] text-white rounded-[2.5rem] p-8 sm:p-10 flex flex-col justify-between shadow-sm border border-gray-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-9 h-9 text-blue-400 mb-6">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
-                    </svg>
-                    <div>
-                        <h3 className="text-xl font-bold tracking-tight mb-1">Aman & Rahasia</h3>
-                        <p className="text-gray-400 text-sm font-medium">Seluruh data pelaporan dilindungi oleh sistem.</p>
-                    </div>
-                </div>
+                {}
+                <button 
+                    onClick={() => setShowInfo(!showInfo)}
+                    className={`hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-amber-400 rounded-full items-center justify-center shadow-xl z-20 border-4 border-white cursor-pointer hover:scale-110 transition-all duration-300 group ${showInfo ? 'rotate-180 bg-rose-500 text-white' : 'text-amber-900'}`}
+                    title="Cara Kerja Aplikasi"
+                >
+                    {showInfo ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-6 h-6">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6 ml-0.5 group-hover:text-amber-950">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+                        </svg>
+                    )}
+                </button>
 
-                {/* BENTO BOX 4: LINK REGISTER (Kotak Kecil Tengah Bawah) */}
-                <div className="bg-white rounded-[2.5rem] p-8 sm:p-10 flex flex-col justify-center items-center text-center shadow-sm border border-gray-100 hover:border-blue-100 hover:bg-blue-50/50 transition-all cursor-pointer group">
-                    <div className="w-14 h-14 bg-[#F5F5F7] rounded-[1.2rem] flex items-center justify-center mb-5 group-hover:bg-blue-100 transition-colors">
-                        <span className="text-2xl">👋</span>
+                {}
+                <div className="hidden md:block w-1/2 relative bg-slate-100 overflow-hidden">
+                    
+                    {}
+                    <img 
+                        src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?q=80&w=1000&auto=format&fit=crop" 
+                        alt="School Hallway" 
+                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ${showInfo ? 'scale-125 blur-md brightness-50' : 'hover:scale-105 brightness-90'}`}
+                    />
+                    
+                    {}
+                    <div className="absolute inset-0 bg-teal-900/20 mix-blend-multiply"></div>
+
+                    {}
+                    <div className={`absolute inset-0 bg-teal-900/80 backdrop-blur-md flex flex-col items-center justify-center p-12 text-center transition-all duration-500 transform ${showInfo ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 pointer-events-none'}`}>
+                        <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-md">
+                            <span className="text-3xl">🔍</span>
+                        </div>
+                        <h3 className="text-3xl font-bold text-white mb-4 tracking-tight">Cara Kerja Kembaliin</h3>
+                        <div className="text-teal-50 space-y-4 text-left bg-white/10 p-6 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner">
+                            <p className="flex items-start gap-3">
+                                <span className="bg-amber-400 text-teal-900 font-bold w-6 h-6 flex items-center justify-center rounded-full shrink-0">1</span>
+                                <span><strong>Login/Daftar</strong> menggunakan data siswa yang valid.</span>
+                            </p>
+                            <p className="flex items-start gap-3">
+                                <span className="bg-amber-400 text-teal-900 font-bold w-6 h-6 flex items-center justify-center rounded-full shrink-0">2</span>
+                                <span><strong>Buat Laporan</strong> barang yang kamu temukan atau hilangkan.</span>
+                            </p>
+                            <p className="flex items-start gap-3">
+                                <span className="bg-amber-400 text-teal-900 font-bold w-6 h-6 flex items-center justify-center rounded-full shrink-0">3</span>
+                                <span><strong>Sistem Mencocokkan</strong> data secara otomatis.</span>
+                            </p>
+                            <p className="flex items-start gap-3">
+                                <span className="bg-amber-400 text-teal-900 font-bold w-6 h-6 flex items-center justify-center rounded-full shrink-0">4</span>
+                                <span><strong>Ambil Barang</strong> di ruang BK/TU sekolah!</span>
+                            </p>
+                        </div>
                     </div>
-                    <h3 className="text-lg font-bold tracking-tight mb-1 text-[#1D1D1F]">Siswa Baru?</h3>
-                    <Link href="/register" className="text-blue-600 hover:text-blue-700 font-bold text-sm transition-colors flex items-center gap-1">
-                        Buat akun sekarang 
-                        <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
-                    </Link>
+
                 </div>
 
             </div>
