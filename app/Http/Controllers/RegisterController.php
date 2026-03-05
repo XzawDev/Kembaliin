@@ -25,6 +25,7 @@ class RegisterController extends Controller
             'no_hp' => $request->no_hp,
             'kelas' => $request->kelas,
             'password' => Hash::make($request->password),
+            'role' => 'siswa',
         ]);
 
         return Redirect::to('/login')->with('success', 'Registrasi berhasil! Silakan login.');

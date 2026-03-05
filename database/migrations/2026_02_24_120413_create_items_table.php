@@ -15,15 +15,23 @@ return new class extends Migration {
 
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('category_id')->constrained()->cascadeOnDelete();
-            $table->enum('type', ['lost', 'found']);
             $table->string('name');
             $table->text('description');
             $table->string('location');
+            $table->enum('report_type', ['hilang', 'ditemukan']);
+            $table
+                ->enum('report_status', [
+                    'dicari', // masih aktif
+                    'ditemukan', // sudah ketemu pasangan
+                    'ditutup', // sudah selesai
+                ])
+                ->default('dicari');
+            $table->enum('handling_status', ['menunggu_penyerahan', 'dititipkan_petugas', 'diklaim', 'dikembalikan'])->nullable();
             $table->date('date');
             $table->string('qr_code')->nullable();
-            $table->enum('status', ['hilang', 'menunggu_penyerahan', 'dititipkan', 'diklaim', 'dikembalikan']);
             $table->foreignId('verified_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

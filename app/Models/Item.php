@@ -2,123 +2,102 @@
 
 namespace App\Models;
 
+use App\Enums\ReportType;
+use App\Enums\ReportStatus;
+use App\Enums\HandlingStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Enums\ItemStatus;
+
 class Item extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'category_id', 'type', 'name', 'description', 'location', 'date', 'qr_code', 'status', 'verified_by'];
-
-    protected $casts = [
-        'status' => ItemStatus::class,
+    protected $fillable = [
+        'user_id',
+        'category_id',
+        'report_type',
+        'report_status',        // new column
+        'name',
+        'description',
+        'location',
+        'date',
+        'qr_code',
+        'handling_status',
+        'verified_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'date' => 'date',
-        ];
-    }
+    protected $casts = [
+        'report_type'      => ReportType::class,
+        'report_status'    => ReportStatus::class,
+        'handling_status'  => HandlingStatus::class,
+        'date'             => 'date',
+    ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | RELATIONS
-    |--------------------------------------------------------------------------
-    */
-
-    // Pemilik laporan (siswa yang membuat laporan)
+    // Relations
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Kategori barang
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    // Banyak gambar
     public function images()
     {
         return $this->hasMany(ItemImage::class);
     }
 
-    // Banyak klaim
     public function claims()
     {
         return $this->hasMany(Claim::class);
     }
 
-    // Petugas yang memverifikasi
     public function verifier()
     {
         return $this->belongsTo(User::class, 'verified_by');
     }
 
-    // History aktivitas
     public function histories()
     {
         return $this->hasMany(ItemHistory::class);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | STATUS HELPERS
-    |--------------------------------------------------------------------------
-    */
-
-    public const STATUS_HILANG = 'hilang';
-    public const STATUS_MENUNGGU = 'menunggu_penyerahan';
-    public const STATUS_DITITIPKAN = 'dititipkan';
-    public const STATUS_DIKLAIM = 'diklaim';
-    public const STATUS_DIKEMBALIKAN = 'dikembalikan';
-
+    // Status helpers
     public function isLost()
     {
-        return $this->status === self::STATUS_HILANG;
+        return $this->report_type === ReportType::HILANG;
     }
 
     public function isFound()
     {
-        return $this->type === 'found';
+        return $this->report_type === ReportType::DITEMUKAN;
     }
 
     public function isDititipkan()
     {
-        return $this->status === self::STATUS_DITITIPKAN;
+        return $this->handling_status === HandlingStatus::DITITIPKAN_PETUGAS;
     }
 
     public function isReturned()
     {
-        return $this->status === self::STATUS_DIKEMBALIKAN;
+        return $this->handling_status === HandlingStatus::DIKEMBALIKAN;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | SCOPES (untuk query mudah)
-    |--------------------------------------------------------------------------
-    */
-
+    // Scopes
     public function scopeLost($query)
     {
-        return $query->where('type', 'lost');
-    }
-
-    public function verificationQuestions()
-    {
-        return $this->hasMany(ItemVerificationQuestion::class);
+        return $query->where('report_type', ReportType::HILANG);
     }
 
     public function scopeFound($query)
     {
-        return $query->where('type', 'found');
+        return $query->where('report_type', ReportType::DITEMUKAN);
     }
 
     public function scopeAvailable($query)
     {
-        return $query->where('status', self::STATUS_DITITIPKAN);
+        return $query->where('handling_status', HandlingStatus::DITITIPKAN_PETUGAS);
     }
 }
