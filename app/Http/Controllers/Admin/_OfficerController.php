@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Item;
 use App\Models\Category;
 use App\Models\ItemHistory;
@@ -9,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Enums\HandlingStatus;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use App\Enums\ReportType;
 
 class OfficerController extends Controller
 {
@@ -27,8 +29,7 @@ class OfficerController extends Controller
             ->limit(10)
             ->get()
             ->map(function ($item) {
-                // Add display_status if needed
-                if ($item->report_type === 'hilang') {
+                if ($item->report_type === ReportType::HILANG) {
                     $item->display_status = 'hilang';
                 } else {
                     $item->display_status = $item->handling_status ?? 'menunggu_penyerahan';
@@ -177,7 +178,7 @@ class OfficerController extends Controller
     }
 
     // Verify handover and update status + verified_by
-     public function verifyItemHandover(Request $request, Item $item)
+    public function verifyItemHandover(Request $request, Item $item)
     {
         // Compare using the enum case
         if ($item->handling_status !== HandlingStatus::MENUNGGU_PENYERAHAN) {
@@ -195,7 +196,6 @@ class OfficerController extends Controller
             'description' => "Item '{$item->name}' verified and handed over.",
         ]);
 
-        return redirect()->route('officer.items.show', $item->id)
-            ->with('success', 'Item verified and handed over.');
+        return redirect()->route('officer.items.show', $item->id)->with('success', 'Item verified and handed over.');
     }
 }

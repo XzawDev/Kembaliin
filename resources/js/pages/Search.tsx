@@ -1,0 +1,274 @@
+import React, { useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
+import Navbar from '@/Components/Home/Navbar';
+import SearchFilters from '@/Components/Home/SearchFilter';
+import { Search as SearchIcon, X, MapPin, PackageSearch, ArrowRight, SlidersHorizontal } from 'lucide-react';
+
+interface Category {
+    id: number;
+    name: string;
+}
+
+interface Item {
+    id: number;
+    name: string;
+    description: string | null;
+    location: string;
+    date: string;
+    display_status: string;
+    image_url: string | null;
+    category: Category;
+}
+
+interface Props {
+    items: {
+        data: Item[];
+        links: any[];
+        current_page: number;
+        last_page: number;
+        total: number;
+    };
+    filters: {
+        keyword?: string;
+        category_id?: string;
+        report_type?: string;
+        location?: string;
+        date_from?: string;
+        date_to?: string;
+    };
+    categories: Category[];
+}
+
+export default function Search({ items, filters, categories }: Props) {
+    const [keyword, setKeyword] = useState(filters.keyword || '');
+    const [categoryId, setCategoryId] = useState(filters.category_id || '');
+    const [reportType, setReportType] = useState(filters.report_type || '');
+    const [location, setLocation] = useState(filters.location || '');
+    const [dateFrom, setDateFrom] = useState(filters.date_from || '');
+    const [dateTo, setDateTo] = useState(filters.date_to || '');
+    const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+    const handleSearch = (e?: React.FormEvent) => {
+        e?.preventDefault();
+        const params: any = {};
+        if (keyword) params.keyword = keyword;
+        if (categoryId) params.category_id = categoryId;
+        if (reportType) params.report_type = reportType;
+        if (location) params.location = location;
+        if (dateFrom) params.date_from = dateFrom;
+        if (dateTo) params.date_to = dateTo;
+
+        router.get('/search', params, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+        setIsMobileFilterOpen(false);
+    };
+
+    const clearFilters = () => {
+        setKeyword('');
+        setCategoryId('');
+        setReportType('');
+        setLocation('');
+        setDateFrom('');
+        setDateTo('');
+        router.get('/search', {});
+    };
+
+    return (
+        <div className="min-h-screen bg-[#FDFDFD]">
+            <Head title="Cari Barang" />
+            <Navbar />
+
+            <main className="pt-16 md:pt-20">
+                {/* Mobile Hero Section (search bar and filter button) */}
+                <div className="border-b border-slate-100 bg-slate-50 lg:hidden">
+                    <div className="mx-auto max-w-7xl px-4 py-6">
+                        <form onSubmit={handleSearch} className="relative flex items-center gap-2">
+                            <div className="flex flex-1 items-center rounded-full border border-slate-200 bg-white px-4 py-2.5 transition-all focus-within:ring-2 focus-within:ring-indigo-200">
+                                <SearchIcon className="text-slate-400" size={18} />
+                                <input
+                                    type="text"
+                                    placeholder="Cari kunci, tas..."
+                                    value={keyword}
+                                    onChange={(e) => setKeyword(e.target.value)}
+                                    className="w-full bg-transparent px-2 text-sm outline-none placeholder:text-slate-400"
+                                />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsMobileFilterOpen(true)}
+                                className="flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                            >
+                                <SlidersHorizontal size={16} />
+                                <span className="xs:inline hidden">Filter</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {/* Desktop/Tablet Layout */}
+                <div className="mx-auto max-w-7xl px-4 py-8 lg:px-0">
+                    <div className="flex flex-col gap-0 lg:flex-row">
+                        {/* Desktop Sidebar - flush left */}
+                        <aside className="hidden w-80 flex-shrink-0 lg:block">
+                            <div className="sticky top-28 min-h-[calc(100vh-8rem)] rounded-2xl border border-l-0 border-slate-100 bg-white p-6 shadow-sm">
+                                <SearchFilters
+                                    keyword={keyword}
+                                    setKeyword={setKeyword}
+                                    categoryId={categoryId}
+                                    setCategoryId={setCategoryId}
+                                    reportType={reportType}
+                                    setReportType={setReportType}
+                                    location={location}
+                                    setLocation={setLocation}
+                                    dateFrom={dateFrom}
+                                    setDateFrom={setDateFrom}
+                                    dateTo={dateTo}
+                                    setDateTo={setDateTo}
+                                    categories={categories}
+                                    onApply={() => handleSearch()}
+                                    onClear={clearFilters}
+                                    showSearch={true} // show search input in sidebar
+                                />
+                            </div>
+                        </aside>
+
+                        {/* Main Content */}
+                        <div className="flex-1 lg:pl-8 xl:pl-12">
+                            {/* Desktop heading (optional) */}
+                            <div className="mb-6 hidden lg:block">
+                                <h2 className="text-2xl font-black tracking-tight text-slate-900">Hasil Pencarian</h2>
+                                <p className="mt-1 text-sm text-slate-500">{items.total} laporan ditemukan</p>
+                            </div>
+
+                            {/* Mobile result count */}
+                            <div className="mb-4 flex items-center justify-between px-1 lg:hidden">
+                                <h3 className="text-sm font-bold text-slate-800">{items.total} Laporan Ditemukan</h3>
+                            </div>
+
+                            {items.data.length > 0 ? (
+                                <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
+                                    {items.data.map((item) => (
+                                        <Link
+                                            key={item.id}
+                                            href={`/items/${item.id}`}
+                                            className="group flex flex-col rounded-2xl border border-slate-100 bg-white p-3 transition-all hover:shadow-xl md:rounded-3xl md:p-5"
+                                        >
+                                            <div className="relative aspect-square overflow-hidden rounded-xl md:rounded-2xl">
+                                                <img
+                                                    src={
+                                                        item.image_url ||
+                                                        'https://images.unsplash.com/photo-1544006659-f0b21f04cb1b?q=80&w=800&auto=format&fit=crop'
+                                                    }
+                                                    alt={item.name}
+                                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                />
+                                                <div className="absolute top-2 left-2 md:top-3 md:left-3">
+                                                    <StatusBadge status={item.display_status} />
+                                                </div>
+                                            </div>
+                                            <div className="px-1 pt-3 pb-2 md:pt-4">
+                                                <span className="mb-1 block text-[10px] font-black tracking-widest text-indigo-500 uppercase md:text-xs">
+                                                    {item.category.name}
+                                                </span>
+                                                <h4 className="mb-2 line-clamp-1 text-sm font-bold text-slate-900 transition-colors group-hover:text-indigo-600 md:text-base">
+                                                    {item.name}
+                                                </h4>
+                                                <div className="mb-3 flex items-center gap-1.5 text-slate-400">
+                                                    <MapPin size={12} className="flex-shrink-0 md:hidden" />
+                                                    <MapPin size={14} className="hidden flex-shrink-0 md:block" />
+                                                    <span className="line-clamp-1 text-[10px] font-medium md:text-xs">{item.location}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between text-[10px] font-bold text-indigo-600 md:text-xs">
+                                                    <span>Lihat Detail</span>
+                                                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-50 transition-all group-hover:bg-indigo-600 group-hover:text-white md:h-7 md:w-7">
+                                                        <ArrowRight size={12} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="mx-2 rounded-3xl border border-dashed border-slate-200 bg-white py-20 text-center">
+                                    <PackageSearch className="mx-auto mb-4 text-slate-300" size={48} />
+                                    <h4 className="font-bold text-slate-900">Tidak ada hasil</h4>
+                                    <button onClick={clearFilters} className="mt-4 text-sm font-bold text-indigo-600">
+                                        Reset Filter
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Pagination */}
+                            {items.last_page > 1 && (
+                                <div className="mt-12 flex flex-wrap justify-center gap-1.5">
+                                    {items.links?.map((link, i) => (
+                                        <Link
+                                            key={i}
+                                            href={link.url || '#'}
+                                            className={`flex h-8 items-center justify-center rounded-xl px-3 text-[10px] font-bold transition-all md:h-10 md:px-4 md:text-xs ${
+                                                link.active
+                                                    ? 'bg-indigo-600 text-white shadow-md'
+                                                    : 'border border-slate-100 bg-white text-slate-600 hover:border-indigo-300'
+                                            }`}
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Mobile Filter Drawer */}
+                {isMobileFilterOpen && (
+                    <div className="fixed inset-0 z-[60] lg:hidden">
+                        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMobileFilterOpen(false)} />
+                        <div className="absolute top-0 right-0 bottom-0 flex w-[85%] max-w-sm flex-col bg-white shadow-2xl">
+                            <div className="flex items-center justify-between border-b p-6">
+                                <h2 className="text-lg font-black tracking-tight text-slate-900">Filter</h2>
+                                <button onClick={() => setIsMobileFilterOpen(false)} className="p-2 text-slate-400">
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-6">
+                                <SearchFilters
+                                    keyword={keyword}
+                                    setKeyword={setKeyword}
+                                    categoryId={categoryId}
+                                    setCategoryId={setCategoryId}
+                                    reportType={reportType}
+                                    setReportType={setReportType}
+                                    location={location}
+                                    setLocation={setLocation}
+                                    dateFrom={dateFrom}
+                                    setDateFrom={setDateFrom}
+                                    dateTo={dateTo}
+                                    setDateTo={setDateTo}
+                                    categories={categories}
+                                    onApply={() => handleSearch()}
+                                    onClear={clearFilters}
+                                    showSearch={false} // no search input in mobile drawer (already at top)
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </main>
+        </div>
+    );
+}
+
+function StatusBadge({ status }: { status: string }) {
+    const isLost = status === 'hilang';
+    return (
+        <span
+            className={`rounded-lg border border-white/20 px-2 py-1 text-[8px] font-black tracking-widest uppercase shadow-sm backdrop-blur-md md:px-3 md:py-1.5 md:text-[10px] ${
+                isLost ? 'bg-red-600 text-white' : 'bg-emerald-500/90 text-white'
+            }`}
+        >
+            {isLost ? 'HILANG' : 'DITEMUKAN'}
+        </span>
+    );
+}

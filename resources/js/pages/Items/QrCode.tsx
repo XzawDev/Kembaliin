@@ -8,35 +8,26 @@ interface Props {
         name: string;
         qr_code: string;
     };
-    qrCodeDataUri: string;   // new prop
+    qrCodeDataUri: string; // new prop
 }
 
 export default function QrCode({ item, qrCodeDataUri }: Props) {
     return (
         <AuthenticatedLayout>
             <Head title="QR Code Penyerahan" />
-            <div className="max-w-2xl mx-auto py-10 px-4">
-                <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 text-center">
-                    <h1 className="text-2xl font-bold text-slate-900 mb-4">QR Code Penyerahan Barang</h1>
-                    <p className="text-slate-600 mb-6">
-                        Tunjukkan QR code ini kepada petugas saat menyerahkan{' '}
-                        <span className="font-bold">{item.name}</span>.
+            <div className="mx-auto max-w-2xl px-4 py-10">
+                <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+                    <h1 className="mb-4 text-2xl font-bold text-slate-900">QR Code Penyerahan Barang</h1>
+                    <p className="mb-6 text-slate-600">
+                        Tunjukkan QR code ini kepada petugas saat menyerahkan <span className="font-bold">{item.name}</span>.
                     </p>
-                    <div className="flex justify-center mb-6">
-                        <img 
-                            src={qrCodeDataUri} 
-                            alt="QR Code" 
-                            className="w-64 h-64 border border-slate-200 rounded-2xl" 
-                        />
+                    <div className="mb-6 flex justify-center">
+                        <img src={qrCodeDataUri} alt="QR Code" className="h-64 w-64 rounded-2xl border border-slate-200" />
                     </div>
-                    <p className="text-sm text-slate-500 mb-8">
-                        Atau gunakan token:{' '}
-                        <span className="font-mono bg-slate-100 px-2 py-1 rounded">{item.qr_code}</span>
+                    <p className="mb-8 text-sm text-slate-500">
+                        Atau gunakan token: <span className="rounded bg-slate-100 px-2 py-1 font-mono">{item.qr_code}</span>
                     </p>
-                    <Link
-                        href="/Siswa/dashboard"
-                        className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
-                    >
+                    <Link href="/Siswa/dashboard" className="inline-block rounded-xl bg-indigo-600 px-6 py-3 text-white hover:bg-indigo-700">
                         Kembali ke Dashboard
                     </Link>
                 </div>

@@ -2,75 +2,89 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\LoginController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ItemController;
-use App\Http\Controllers\OfficerController;
+use App\Http\Controllers\Home\HomeController;
+use App\Http\Controllers\Home\SearchController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Siswa\DashboardController;
+use App\Http\Controllers\Item\ItemController;
+use App\Http\Controllers\Item\ClaimController;
+use App\Http\Controllers\Item\QrController;
+
+// Admin (officer) controllers
+use App\Http\Controllers\Admin\DashboardController as OfficerDashboardController;
+use App\Http\Controllers\Admin\ItemController as OfficerItemController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\HistoryController;
+use App\Http\Controllers\Admin\QrVerificationController;
 
 // Redirect root to login
-Route::get('/', function () {
-    return redirect('/login');
-});
+Route::get('/', fn() => redirect('/home'));
 
-// Guest routes (no authentication required)
-Route::get('/register', function () {
-    return Inertia::render('Auth/Register');
-})->name('register');
+// Guest routes
+Route::get('/register', fn() => Inertia::render('Auth/Register'))->name('register');
 Route::post('/register', [RegisterController::class, 'storeRegister'])->name('register.store');
 
-Route::get('/login', function () {
-    return Inertia::render('Auth/Login');
-})->name('login');
+Route::get('/login', fn() => Inertia::render('Auth/Login'))->name('login');
 Route::post('/login', [LoginController::class, 'storeLogin'])->name('login.store');
 
-// Public route – accessible to everyone
+// Public routes (no login required)
 Route::get('/home', [HomeController::class, 'index'])->name('home');
+Route::get('/qr/{token}', [QrController::class, 'generateQr'])->name('qr.generate');
+Route::get('/search', [SearchController::class, 'index'])->name('search');
 
-// Public QR code image route – must be accessible without login
-Route::get('/qr/{token}', [ItemController::class, 'generateQr'])->name('qr.generate');
-
-// Protected routes (require authentication)
+// Authenticated routes
 Route::middleware(['auth'])->group(function () {
-    // Student dashboard
+    // Siswa (student) routes
     Route::get('/Siswa/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    // Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::get('/Siswa/laporan', [DashboardController::class, 'allReports'])->name('siswa.laporan');
 
-    // Item creation and QR display (authenticated)
+    // Item CRUD (student)
     Route::get('/items/create', [ItemController::class, 'create'])->name('items.create');
     Route::post('/items', [ItemController::class, 'store'])->name('items.store');
-    Route::get('/items/{item}/qr', [ItemController::class, 'showQr'])->name('items.qr');
+    Route::get('/items/{item}/qr', [QrController::class, 'showQr'])->name('items.qr');
+    Route::get('/items/{item}/edit', [ItemController::class, 'edit'])->name('items.edit');
+    Route::match(['put', 'patch'], '/items/{item}', [ItemController::class, 'update'])->name('items.update');
+    Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
 
-    // Officer routes – require authentication + 'petugas' role
+    // Owner detail item (with edit/delete controls)
+    Route::get('/siswa/items/{item}', [ItemController::class, 'showForOwner'])->name('siswa.items.show');
+
+    // Claim verification
+    Route::get('/items/{item}/questions', [ClaimController::class, 'getQuestions'])->name('items.questions');
+    Route::post('/items/{item}/verify-claim', [ClaimController::class, 'store'])->name('items.verify-claim');
+
+    // Officer routes (role petugas)
     Route::middleware(['auth', 'role:petugas'])
         ->prefix('officer')
         ->name('officer.')
         ->group(function () {
-            Route::get('/dashboard', [OfficerController::class, 'index'])->name('dashboard');
-            Route::get('/items', [OfficerController::class, 'items'])->name('items');
-            Route::get('/items/{item}', [OfficerController::class, 'showItem'])->name('items.show');
-            Route::match(['put', 'patch'], '/items/{item}', [OfficerController::class, 'updateItem'])->name('items.update');
+            // Dashboard
+            Route::get('/dashboard', [OfficerDashboardController::class, 'index'])->name('dashboard');
 
-            // Category CRUD
-            Route::get('/categories', [OfficerController::class, 'categories'])->name('categories');
-            Route::get('/categories/create', [OfficerController::class, 'createCategory'])->name('categories.create');
-            Route::post('/categories', [OfficerController::class, 'storeCategory'])->name('categories.store');
-            Route::get('/categories/{category}/edit', [OfficerController::class, 'editCategory'])->name('categories.edit');
-            Route::put('/categories/{category}', [OfficerController::class, 'updateCategory'])->name('categories.update');
-            Route::delete('/categories/{category}', [OfficerController::class, 'destroyCategory'])->name('categories.destroy');
+            // Item management
+            Route::get('/items', [OfficerItemController::class, 'items'])->name('items');
+            Route::get('/items/{item}', [OfficerItemController::class, 'showItem'])->name('items.show');
+            Route::match(['put', 'patch'], '/items/{item}', [OfficerItemController::class, 'updateItem'])->name('items.update');
+            Route::get('/items/by-token/{token}', [OfficerItemController::class, 'showItemByToken'])->name('items.by-token');
+
+            // Category management
+            Route::get('/categories', [CategoryController::class, 'categories'])->name('categories');
+            Route::get('/categories/create', [CategoryController::class, 'createCategory'])->name('categories.create');
+            Route::post('/categories', [CategoryController::class, 'storeCategory'])->name('categories.store');
+            Route::get('/categories/{category}/edit', [CategoryController::class, 'editCategory'])->name('categories.edit');
+            Route::put('/categories/{category}', [CategoryController::class, 'updateCategory'])->name('categories.update');
+            Route::delete('/categories/{category}', [CategoryController::class, 'destroyCategory'])->name('categories.destroy');
 
             // History
-            Route::get('/history', [OfficerController::class, 'history'])->name('history');
+            Route::get('/history', [HistoryController::class, 'history'])->name('history');
 
-            // QR Verification
-            Route::get('/verify', [OfficerController::class, 'verifyQrPage'])->name('verify');
-            Route::match(['get', 'post'], '/verify-handover/{token}', [OfficerController::class, 'verifyHandover'])->name('verifyHandover');
-
-            Route::get('/items/by-token/{token}', [OfficerController::class, 'showItemByToken'])->name('items.by-token');
-            Route::post('/items/{item}/verify-handover', [OfficerController::class, 'verifyItemHandover'])->name('items.verify-handover');
-            
+            // QR verification (handover)
+            Route::get('/verify', [QrVerificationController::class, 'verifyQrPage'])->name('verify');
+            Route::post('/items/{item}/verify-handover', [QrVerificationController::class, 'verifyItemHandover'])->name('items.verify-handover');
         });
 });
+
+// Public item detail – MUST be last to avoid conflicts with specific routes above
+Route::get('/items/{item}', [ItemController::class, 'show'])->name('items.show');
