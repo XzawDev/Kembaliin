@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Head, router } from '@inertiajs/react';
-import OfficerLayout from '@/layouts/OfficerLayout'; // use OfficerLayout
+import OfficerLayout from '../../layouts/OfficerLayout'; // use OfficerLayout
 import { BrowserQRCodeReader } from '@zxing/browser';
 
 export default function VerifyQr() {
