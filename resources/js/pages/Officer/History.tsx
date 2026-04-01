@@ -9,64 +9,104 @@ interface HistoryItem {
     created_at: string;
     user: { name: string } | null;
     item: {
-        id: any; name: string 
-};
+        id: number;
+        name: string;
+    } | null;
 }
 
 interface Props {
     histories: {
         data: HistoryItem[];
-        links: any; // for pagination
+        links: Array<{ url: string | null; label: string; active: boolean }>;
     };
+}
+
+// Fungsi untuk mendapatkan label aksi yang mudah dibaca
+function getActionLabel(action: string): string {
+    const actionMap: Record<string, string> = {
+        'created item': 'Buat Laporan',
+        'updated item': 'Edit Laporan',
+        'updated item status': 'Ubah Status',
+        'handed over to officer': 'Serah Terima',
+        'soft deleted by owner': 'Hapus Laporan',
+    };
+    return actionMap[action] || action;
 }
 
 export default function History({ histories }: Props) {
     return (
         <OfficerLayout>
-            <Head title="Activity History" />
-            <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-                <h1 className="text-3xl font-bold text-slate-900 mb-8">Activity History</h1>
+            <Head title="Riwayat Aktivitas" />
+            <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+                <h1 className="mb-8 text-3xl font-bold text-slate-900">Riwayat Aktivitas</h1>
 
-                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                    <table className="w-full">
-                        <thead className="bg-slate-50 border-b">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase">Timestamp</th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase">Officer</th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase">Item</th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase">Action</th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase">Details</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {histories.data.map(history => (
-                                <tr key={history.id} className="hover:bg-slate-50">
-                                    <td className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap">
-                                        {new Date(history.created_at).toLocaleString()}
-                                    </td>
-                                    <td className="px-6 py-4 font-medium">{history.user?.name ?? 'System'}</td>
-                                    <td className="px-6 py-4">
-                                        <Link href={`/officer/items/${history.item.id}`} className="text-indigo-600 hover:underline">
-                                            {history.item.name}
-                                        </Link>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="px-2 py-1 text-xs rounded-full bg-slate-100 capitalize">
-                                            {history.action}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-slate-600">{history.description || '-'}</td>
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="border-b bg-slate-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase">Waktu</th>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase">Petugas</th>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase">Barang</th>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase">Aksi</th>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase">Keterangan</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {histories.data.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                                            Belum ada riwayat aktivitas.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    histories.data.map((history) => (
+                                        <tr key={history.id} className="transition-colors hover:bg-slate-50">
+                                            <td className="px-6 py-4 text-sm whitespace-nowrap text-slate-600">
+                                                {new Date(history.created_at).toLocaleString('id-ID')}
+                                            </td>
+                                            <td className="px-6 py-4 font-medium text-slate-700">{history.user?.name ?? 'Sistem'}</td>
+                                            <td className="px-6 py-4">
+                                                {history.item ? (
+                                                    <Link
+                                                        href={`/officer/items/${history.item.id}`}
+                                                        className="font-medium text-indigo-600 hover:underline"
+                                                    >
+                                                        {history.item.name}
+                                                    </Link>
+                                                ) : (
+                                                    <span className="text-slate-400 italic">(Barang telah dihapus)</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                                                    {getActionLabel(history.action)}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-600">{history.description || '-'}</td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                {/* Pagination links (simplified) */}
-                <div className="mt-6 flex justify-between">
-                    {histories.links?.prev && <Link href={histories.links.prev} className="text-indigo-600">Previous</Link>}
-                    {histories.links?.next && <Link href={histories.links.next} className="text-indigo-600">Next</Link>}
-                </div>
+                {/* Pagination */}
+                {histories.links && histories.links.length > 0 && (
+                    <div className="mt-6 flex justify-center gap-2">
+                        {histories.links.map((link, i) => (
+                            <Link
+                                key={i}
+                                href={link.url || '#'}
+                                className={`rounded-lg px-3 py-1 text-sm transition-colors ${
+                                    link.active ? 'bg-indigo-600 text-white' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                                } ${!link.url ? 'cursor-not-allowed opacity-50' : ''}`}
+                                dangerouslySetInnerHTML={{ __html: link.label }}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </OfficerLayout>
     );

@@ -7,9 +7,11 @@ use App\Enums\ReportStatus;
 use App\Enums\HandlingStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Item extends Model
 {
+    use SoftDeletes;
     use HasFactory;
 
     protected $fillable = [
@@ -24,6 +26,7 @@ class Item extends Model
         'qr_code',
         'handling_status',
         'verified_by',
+        'closed_at',
     ];
 
     protected $casts = [
@@ -31,6 +34,7 @@ class Item extends Model
         'report_status'    => ReportStatus::class,
         'handling_status'  => HandlingStatus::class,
         'date'             => 'date',
+        'closed_at' => 'datetime',
     ];
 
     // Relations
