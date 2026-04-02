@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+// TAMBAHKAN LINE INI:
+use Illuminate\Support\Facades\URL; 
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        // Logika Force HTTPS
+        if (app()->environment('production') || env('FORCE_HTTPS', false)) {
+            URL::forceScheme('https');
+        }
     }
 
     /**
