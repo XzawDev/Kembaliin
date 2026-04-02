@@ -18,7 +18,7 @@ class Item extends Model
         'user_id',
         'category_id',
         'report_type',
-        'report_status',        // new column
+        'report_status', // new column
         'name',
         'description',
         'location',
@@ -30,10 +30,10 @@ class Item extends Model
     ];
 
     protected $casts = [
-        'report_type'      => ReportType::class,
-        'report_status'    => ReportStatus::class,
-        'handling_status'  => HandlingStatus::class,
-        'date'             => 'date',
+        'report_type' => ReportType::class,
+        'report_status' => ReportStatus::class,
+        'handling_status' => HandlingStatus::class,
+        'date' => 'date',
         'closed_at' => 'datetime',
     ];
 
@@ -104,4 +104,10 @@ class Item extends Model
     {
         return $query->where('handling_status', HandlingStatus::DITITIPKAN_PETUGAS);
     }
+
+    public function verificationQuestions()
+    {
+        return $this->hasMany(ItemVerificationQuestion::class);
+    }
+
 }

@@ -11,8 +11,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use App\Enums\ReportType;
-use App\Enums\ReportStatus; // ✅ import enum baru
+use App\Enums\ReportStatus;
 use App\Models\ItemHistory;
+use Illuminate\Support\Facades\Hash;
 
 class ItemController extends Controller
 {
@@ -34,15 +35,15 @@ class ItemController extends Controller
             'location' => 'required|string|max:255',
             'date' => 'required|date',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'questions' => 'nullable|array',
+            'questions.*.question' => 'required_with:questions|string',
+            'questions.*.answer' => 'required_with:questions|string',
         ]);
 
-        // Map report_type ke database
         $dbReportType = $validated['report_type'] === 'lost' ? 'hilang' : 'ditemukan';
-
-        // ✅ Semua laporan baru statusnya 'aktif'
         $reportStatus = ReportStatus::AKTIF->value;
 
-        $itemData = [
+        $item = Item::create([
             'user_id' => Auth::id(),
             'category_id' => $validated['category_id'],
             'report_type' => $dbReportType,
@@ -52,22 +53,7 @@ class ItemController extends Controller
             'location' => $validated['location'],
             'date' => $validated['date'],
             'handling_status' => $validated['report_type'] === 'found' ? 'menunggu_penyerahan' : null,
-        ];
-
-        $item = Item::create($itemData);
-
-        // Generate QR code untuk barang ditemukan
-        if ($validated['report_type'] === 'found') {
-            $token = Str::uuid()->toString();
-            $item->qr_code = $token;
-            $item->save();
-
-            Log::info('Found item created', [
-                'item_id' => $item->id,
-                'user_id' => Auth::id(),
-                'report_type' => $item->report_type,
-            ]);
-        }
+        ]);
 
         // Upload gambar
         if ($request->hasFile('images')) {
@@ -78,10 +64,42 @@ class ItemController extends Controller
         }
 
         if ($validated['report_type'] === 'found') {
+            // Generate QR code
+            $token = Str::uuid()->toString();
+            $item->qr_code = $token;
+            $item->save();
+
+            // Simpan pertanyaan verifikasi
+            $questions = $request->input('questions', []);
+            $savedCount = 0;
+            if (is_array($questions) && count($questions) > 0) {
+                foreach ($questions as $q) {
+                    if (!empty($q['question']) && !empty($q['answer'])) {
+                        try {
+                            $item->verificationQuestions()->create([
+                                'question' => $q['question'],
+                                'answer_hash' => Hash::make($q['answer']),
+                            ]);
+                            $savedCount++;
+                        } catch (\Exception $e) {
+                            \Log::error('Gagal simpan pertanyaan: ' . $e->getMessage());
+                        }
+                    }
+                }
+            }
+
+            \Log::info('Found item created', [
+                'item_id' => $item->id,
+                'user_id' => Auth::id(),
+                'report_type' => $item->report_type,
+                'questions_received' => count($questions),
+                'questions_saved' => $savedCount,
+            ]);
+
             return redirect()->route('items.qr', $item->id)->with('success', 'Barang ditemukan berhasil dilaporkan. Tunjukkan QR code ke petugas.');
         }
 
-        // Catat history untuk barang hilang
+        // Laporan barang hilang
         ItemHistory::create([
             'item_id' => $item->id,
             'user_id' => Auth::id(),

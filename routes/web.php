@@ -18,7 +18,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\HistoryController;
 use App\Http\Controllers\Admin\QrVerificationController;
 
-// Redirect root to login
+// Redirect root to home
 Route::get('/', fn() => redirect('/home'));
 
 // Guest routes
@@ -51,9 +51,37 @@ Route::middleware(['auth'])->group(function () {
     // Owner detail item (with edit/delete controls)
     Route::get('/siswa/items/{item}', [ItemController::class, 'showForOwner'])->name('siswa.items.show');
 
-    // Claim verification
+    // Claim verification (API for modal)
     Route::get('/items/{item}/questions', [ClaimController::class, 'getQuestions'])->name('items.questions');
     Route::post('/items/{item}/verify-claim', [ClaimController::class, 'store'])->name('items.verify-claim');
+
+    // Claim form and processing
+    Route::get('/claim/{item}', [ClaimController::class, 'create'])->name('claim.create');
+    Route::post('/claim/{item}', [ClaimController::class, 'storeClaim'])->name('claim.store');
+
+    // Claim result pages (success, failed, error)
+    Route::get('/claim/success/{item}', function (App\Models\Item $item) {
+        return Inertia::render('Items/SuksesKlaim', [
+            'item' => $item,
+            'message' => session('message', 'Klaim berhasil'),
+            'contact' => session('contact'),
+            'officer_contact' => session('officer_contact', 'Hubungi petugas'),
+        ]);
+    })->name('claim.success');
+
+    Route::get('/claim/failed/{item}', function (App\Models\Item $item) {
+        return Inertia::render('Items/GagalKlaim', [
+            'item' => $item,
+            'message' => session('message', 'Klaim gagal. Silakan coba lagi.'),
+        ]);
+    })->name('claim.failed');
+
+    Route::get('/claim/error/{item}', function (App\Models\Item $item) {
+        return Inertia::render('Items/ErrorKlaim', [
+            'item' => $item,
+            'message' => session('message', 'Terjadi kesalahan sistem.'),
+        ]);
+    })->name('claim.error');
 
     // Officer routes (role petugas)
     Route::middleware(['auth', 'role:petugas'])
