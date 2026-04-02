@@ -16,7 +16,6 @@ import {
     Clock,
     CheckCircle2,
     Info,
-    X,
 } from 'lucide-react';
 
 interface Item {
@@ -26,7 +25,7 @@ interface Item {
     location: string;
     date: string;
     report_type: 'hilang' | 'ditemukan';
-    report_status: 'dicari' | 'ditemukan' | 'ditutup';
+    report_status: 'aktif' | 'selesai' | 'ditutup';
     handling_status: 'menunggu_penyerahan' | 'dititipkan_petugas' | 'diklaim' | 'dikembalikan' | null;
     display_status: string;
     qr_code: string | null;
@@ -53,17 +52,6 @@ export default function ItemDetail({ item }: Props) {
     const user = auth?.user;
     const isOwner = user && user.id === item.user.id;
 
-    const [showClaimModal, setShowClaimModal] = useState(false);
-    const [questions, setQuestions] = useState<Array<{ id: number; question: string }>>([]);
-    const [answers, setAnswers] = useState<Record<number, string>>({});
-    const [loading, setLoading] = useState(false);
-    const [claimResult, setClaimResult] = useState<{
-        success: boolean;
-        message: string;
-        contact?: { name: string; phone: string };
-        officer_contact?: string;
-    } | null>(null);
-
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('id-ID', {
             day: 'numeric',
@@ -74,15 +62,15 @@ export default function ItemDetail({ item }: Props) {
 
     const getReportStatusLabel = (): string => {
         if (item.report_status === 'ditutup') return 'Ditutup';
-        if (item.handling_status === 'diklaim' || item.handling_status === 'dikembalikan') return 'Diklaim';
-        return 'Terbuka';
+        if (item.report_status === 'selesai') return 'Selesai';
+        return 'Aktif';
     };
 
     const reportStatusLabel = getReportStatusLabel();
     const reportStatusColor =
         reportStatusLabel === 'Ditutup'
             ? 'bg-slate-100 text-slate-700'
-            : reportStatusLabel === 'Diklaim'
+            : reportStatusLabel === 'Selesai'
               ? 'bg-blue-100 text-blue-700'
               : 'bg-emerald-100 text-emerald-700';
 
@@ -93,48 +81,6 @@ export default function ItemDetail({ item }: Props) {
         dikembalikan: 'Dikembalikan ke pemilik',
     };
     const handlingStatusDisplay = item.handling_status ? handlingStatusMap[item.handling_status] : '-';
-
-    const openClaimModal = async () => {
-        if (!user) {
-            router.visit('/login');
-            return;
-        }
-        setLoading(true);
-        setClaimResult(null);
-        setAnswers({});
-        try {
-            const res = await fetch(`/items/${item.id}/questions`);
-            const data = await res.json();
-            setQuestions(data);
-            setShowClaimModal(true);
-        } catch (error) {
-            console.error('Gagal mengambil pertanyaan', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const submitClaim = async () => {
-        setLoading(true);
-        try {
-            const answersArray = Object.entries(answers).map(([qId, ans]) => ({
-                question_id: parseInt(qId),
-                answer: ans,
-            }));
-            const res = await fetch(`/items/${item.id}/verify-claim`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ answers: answersArray, description: '' }),
-            });
-            const result = await res.json();
-            setClaimResult(result);
-        } catch (error) {
-            console.error('Gagal mengirim klaim', error);
-            setClaimResult({ success: false, message: 'Terjadi kesalahan, coba lagi.' });
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleDelete = () => {
         if (confirm('Hapus laporan ini? Laporan akan disembunyikan dari publik.')) {
@@ -285,13 +231,12 @@ export default function ItemDetail({ item }: Props) {
 
                                         {/* Tombol Klaim Barang */}
                                         {!isLost && user && user.id !== item.user.id && item.report_status !== 'ditutup' && (
-                                            <button
-                                                onClick={openClaimModal}
+                                            <Link
+                                                href={`/claim/${item.id}`}
                                                 className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-600 px-6 py-4 font-semibold text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700 active:scale-[0.98]"
                                             >
-                                                <CheckCircle2 size={20} />
-                                                Klaim Barang
-                                            </button>
+                                                <CheckCircle2 size={20} /> Klaim Barang
+                                            </Link>
                                         )}
                                     </div>
                                 </div>
@@ -322,82 +267,6 @@ export default function ItemDetail({ item }: Props) {
                     Hubungi Pelapor
                 </button>
             </div>
-
-            {/* Modal Klaim */}
-            {showClaimModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 shadow-xl">
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-xl font-bold">Klaim Barang</h3>
-                            <button onClick={() => setShowClaimModal(false)} className="rounded-full p-1 hover:bg-slate-100">
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {!claimResult ? (
-                            <>
-                                <p className="mt-2 text-sm text-slate-600">Jawab pertanyaan berikut untuk membuktikan bahwa barang ini milik Anda.</p>
-                                {loading && questions.length === 0 ? (
-                                    <div className="flex justify-center py-8">Memuat pertanyaan...</div>
-                                ) : (
-                                    <>
-                                        <div className="mt-4 space-y-4">
-                                            {questions.map((q) => (
-                                                <div key={q.id}>
-                                                    <label className="block text-sm font-medium text-slate-700">{q.question}</label>
-                                                    <input
-                                                        type="text"
-                                                        className="mt-1 w-full rounded-xl border border-slate-200 p-3 focus:border-indigo-300 focus:ring-1 focus:ring-indigo-300 focus:outline-none"
-                                                        value={answers[q.id] || ''}
-                                                        onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
-                                                        disabled={loading}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="mt-6 flex gap-3">
-                                            <button
-                                                onClick={() => setShowClaimModal(false)}
-                                                className="flex-1 rounded-xl border border-slate-200 py-3 font-medium transition-colors hover:bg-slate-50"
-                                                disabled={loading}
-                                            >
-                                                Batal
-                                            </button>
-                                            <button
-                                                onClick={submitClaim}
-                                                disabled={loading || questions.length === 0}
-                                                className="flex-1 rounded-xl bg-indigo-600 py-3 font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
-                                            >
-                                                {loading ? 'Memproses...' : 'Kirim'}
-                                            </button>
-                                        </div>
-                                    </>
-                                )}
-                            </>
-                        ) : (
-                            <div className="mt-4">
-                                <p className={claimResult.success ? 'text-green-600' : 'text-amber-600'}>{claimResult.message}</p>
-                                {claimResult.success && claimResult.contact && (
-                                    <div className="mt-4 rounded-xl bg-slate-50 p-4">
-                                        <p className="font-semibold">Kontak Pelapor:</p>
-                                        <p>
-                                            {claimResult.contact.name} - {claimResult.contact.phone}
-                                        </p>
-                                        <p className="mt-2 font-semibold">Kontak Petugas:</p>
-                                        <p>{claimResult.officer_contact || 'Hubungi pos penjaga terdekat'}</p>
-                                    </div>
-                                )}
-                                <button
-                                    onClick={() => setShowClaimModal(false)}
-                                    className="mt-4 w-full rounded-xl bg-indigo-600 py-3 font-medium text-white"
-                                >
-                                    Tutup
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

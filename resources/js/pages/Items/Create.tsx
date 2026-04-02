@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Upload, X, MapPin, Calendar, Tag, FileText, Package, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Upload, X, MapPin, Calendar, Tag, FileText, Package, AlertCircle, CheckCircle2, HelpCircle, Plus, Minus } from 'lucide-react';
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 
 interface Category {
@@ -12,6 +12,11 @@ interface Props {
     categories: Category[];
 }
 
+interface Question {
+    question: string;
+    answer: string;
+}
+
 export default function CreateItem({ categories }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
@@ -21,9 +26,17 @@ export default function CreateItem({ categories }: Props) {
         location: '',
         date: '',
         images: [] as File[],
+        questions: [] as Question[], // ← source of truth
     });
 
     const [previews, setPreviews] = useState<string[]>([]);
+
+    // Inisialisasi questions jika report_type === 'found' dan belum ada
+    useEffect(() => {
+        if (data.report_type === 'found' && data.questions.length === 0) {
+            setData('questions', [{ question: '', answer: '' }]);
+        }
+    }, [data.report_type]);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
@@ -43,12 +56,49 @@ export default function CreateItem({ categories }: Props) {
         setPreviews(newPreviews);
     };
 
+    const addQuestion = () => {
+        setData('questions', [...data.questions, { question: '', answer: '' }]);
+    };
+
+    const removeQuestion = (index: number) => {
+        if (data.questions.length > 1) {
+            const newQuestions = [...data.questions];
+            newQuestions.splice(index, 1);
+            setData('questions', newQuestions);
+        }
+    };
+
+    const updateQuestion = (index: number, field: keyof Question, value: string) => {
+        const newQuestions = [...data.questions];
+        newQuestions[index][field] = value;
+        setData('questions', newQuestions);
+    };
+
+    const handleReportTypeChange = (type: 'lost' | 'found') => {
+        setData('report_type', type);
+        if (type === 'lost') {
+            setData('questions', []);
+        }
+    };
+
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (data.report_type === 'found') {
+            const validQuestions = data.questions.filter((q) => q.question.trim() && q.answer.trim());
+            if (validQuestions.length === 0) {
+                alert('Harap tambahkan minimal satu pertanyaan verifikasi untuk barang ditemukan.');
+                return;
+            }
+            // Simpan hanya pertanyaan yang valid
+            setData('questions', validQuestions);
+        }
+
         post('/items', {
             onSuccess: () => {
                 setData('images', []);
                 setPreviews([]);
+                setData('questions', []);
             },
         });
     };
@@ -58,7 +108,6 @@ export default function CreateItem({ categories }: Props) {
             <Head title="Laporkan Barang" />
 
             <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
-                {/* Header Section */}
                 <div className="mb-6 sm:mb-8">
                     <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Laporkan Barang</h1>
                     <p className="mt-1 text-sm text-slate-600">Bantu komunitas menemukan barang yang hilang atau kembali ke pemiliknya.</p>
@@ -69,7 +118,7 @@ export default function CreateItem({ categories }: Props) {
                     <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                         <button
                             type="button"
-                            onClick={() => setData('report_type', 'lost')}
+                            onClick={() => handleReportTypeChange('lost')}
                             className={`relative flex items-start gap-3 rounded-xl border-2 p-3 text-left transition-all duration-200 sm:gap-4 sm:rounded-2xl sm:p-5 ${
                                 data.report_type === 'lost'
                                     ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-50 sm:ring-4'
@@ -96,7 +145,7 @@ export default function CreateItem({ categories }: Props) {
 
                         <button
                             type="button"
-                            onClick={() => setData('report_type', 'found')}
+                            onClick={() => handleReportTypeChange('found')}
                             className={`relative flex items-start gap-3 rounded-xl border-2 p-3 text-left transition-all duration-200 sm:gap-4 sm:rounded-2xl sm:p-5 ${
                                 data.report_type === 'found'
                                     ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-50 sm:ring-4'
@@ -205,6 +254,59 @@ export default function CreateItem({ categories }: Props) {
                                 />
                                 {errors.description && <p className="text-xs text-red-500">{errors.description}</p>}
                             </div>
+
+                            {/* Pertanyaan Verifikasi (hanya untuk barang ditemukan) */}
+                            {data.report_type === 'found' && (
+                                <div className="space-y-3 rounded-xl border border-emerald-100 bg-emerald-50/30 p-4 sm:p-5">
+                                    <div className="flex items-center justify-between">
+                                        <label className="flex items-center gap-2 text-sm font-bold text-emerald-800">
+                                            <HelpCircle size={18} /> Pertanyaan Verifikasi Klaim
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={addQuestion}
+                                            className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
+                                        >
+                                            <Plus size={14} /> Tambah
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-emerald-700">Calon klaim harus menjawab dengan benar untuk mendapatkan kontak Anda.</p>
+                                    <div className="space-y-3">
+                                        {data.questions.map((q, idx) => (
+                                            <div key={idx} className="rounded-lg border border-emerald-200 bg-white p-3">
+                                                <div className="flex items-start justify-between">
+                                                    <span className="text-xs font-medium text-emerald-600">Pertanyaan {idx + 1}</span>
+                                                    {data.questions.length > 1 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeQuestion(idx)}
+                                                            className="text-red-500 hover:text-red-700"
+                                                        >
+                                                            <Minus size={14} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <div className="mt-2 space-y-2">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Pertanyaan (contoh: Apa warna barang ini?)"
+                                                        value={q.question}
+                                                        onChange={(e) => updateQuestion(idx, 'question', e.target.value)}
+                                                        className="w-full rounded-lg border border-slate-200 p-2 text-sm"
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Jawaban (contoh: Merah)"
+                                                        value={q.answer}
+                                                        onChange={(e) => updateQuestion(idx, 'answer', e.target.value)}
+                                                        className="w-full rounded-lg border border-slate-200 p-2 text-sm"
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Upload Gambar */}
                             <div className="space-y-2">

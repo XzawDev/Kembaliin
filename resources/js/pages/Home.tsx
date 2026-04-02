@@ -80,32 +80,34 @@ export default function Home({ auth, items }: Props) {
             {/* Hero Section */}
             <header className="relative px-4 pt-32 pb-16 md:pt-48 md:pb-32">
                 <div className="relative z-10 mx-auto max-w-7xl text-center">
-                    <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-2 text-[10px] font-bold tracking-widest text-indigo-600 uppercase md:text-xs">
-                        <span className="relative flex h-2 w-2">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75"></span>
-                            <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-600"></span>
+                    <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-teal-50 px-4 py-2 text-[10px] font-bold tracking-widest text-teal-600 uppercase md:text-xs">
+                        <span className="relative flex h-4 w-4 items-center justify-center">
+                            {/* Efek gelombang (ping) di belakang */}
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-300 opacity-40"></span>
+                            {/* Ikon Perisai */}
+                            <ShieldCheck size={16} className="relative text-teal-600" />
                         </span>
-                        Platform Terpercaya
+                        Platform Sekolah
                     </div>
                     <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl md:text-7xl">
                         Menemukan Barang <br className="hidden md:block" />
-                        <span className="text-indigo-600">Jadi Lebih Mudah.</span>
+                        <span className="text-teal-600">Jadi Lebih Mudah.</span>
                     </h1>
                     <p className="mx-auto mb-10 max-w-xl text-sm leading-relaxed text-slate-500 md:text-lg">
-                        Komunitas yang membantu Anda menemukan barang yang hilang atau mengembalikan barang yang ditemukan.
+                        Website yang membantu siswa untuk menemukan barang yang hilang atau mengembalikan barang yang ditemukan.
                     </p>
 
                     {/* Search Bar - Responsive */}
                     <div className="mx-auto flex max-w-4xl flex-col gap-2 rounded-2xl border border-slate-100 bg-white p-2 shadow-2xl md:flex-row md:rounded-3xl md:p-3">
                         <div className="flex flex-1 items-center gap-3 border-b border-slate-100 px-4 py-3 md:border-r md:border-b-0 md:py-0">
-                            <Search className="text-indigo-600" size={20} />
+                            <Search className="text-teal-600" size={20} />
                             <input type="text" placeholder="Nama barang..." className="w-full text-sm text-slate-700 outline-none md:text-base" />
                         </div>
                         <div className="flex flex-1 items-center gap-3 px-4 py-3 md:py-0">
                             <MapPin className="text-slate-400" size={20} />
                             <input type="text" placeholder="Lokasi..." className="w-full text-sm text-slate-700 outline-none md:text-base" />
                         </div>
-                        <button className="w-full rounded-xl bg-indigo-600 px-10 py-4 font-bold text-white transition-all hover:bg-indigo-700 md:w-auto md:rounded-2xl">
+                        <button className="w-full rounded-xl bg-teal-600 px-10 py-4 font-bold text-white transition-all hover:bg-teal-700 md:w-auto md:rounded-2xl">
                             Cari
                         </button>
                     </div>
@@ -113,8 +115,8 @@ export default function Home({ auth, items }: Props) {
 
                 {/* Background Decor */}
                 <div className="pointer-events-none absolute top-0 left-1/2 -z-0 h-full w-full -translate-x-1/2 opacity-20">
-                    <div className="absolute top-20 left-10 h-48 w-48 rounded-full bg-indigo-300 blur-[100px] md:h-96 md:w-96 md:blur-[150px]"></div>
-                    <div className="absolute right-10 bottom-10 h-48 w-48 rounded-full bg-blue-300 blur-[100px] md:h-96 md:w-96 md:blur-[150px]"></div>
+                    <div className="absolute top-20 left-10 h-48 w-48 rounded-full bg-teal-300 blur-[100px] md:h-96 md:w-96 md:blur-[150px]"></div>
+                    <div className="absolute right-10 bottom-10 h-48 w-48 rounded-full bg-cyan-300 blur-[100px] md:h-96 md:w-96 md:blur-[150px]"></div>
                 </div>
             </header>
 
@@ -138,8 +140,8 @@ export default function Home({ auth, items }: Props) {
                                         onClick={() => setActiveFilter(f)}
                                         className={`rounded-full border px-6 py-2 text-xs font-bold whitespace-nowrap capitalize transition-all md:text-sm ${
                                             activeFilter === f
-                                                ? 'border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-100'
-                                                : 'border-slate-200 bg-white text-slate-500 hover:border-indigo-600'
+                                                ? 'border-teal-600 bg-teal-600 text-white shadow-lg shadow-teal-100'
+                                                : 'border-slate-200 bg-white text-slate-500 hover:border-teal-600'
                                         }`}
                                     >
                                         {f === 'ditemukan' ? 'Ditemukan' : f} {/* display as 'Ditemukan' */}
@@ -186,7 +188,7 @@ export default function Home({ auth, items }: Props) {
                                             </div>
                                         </div>
 
-                                        <button className="group-btn flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-50 py-3 text-xs font-bold text-slate-800 transition-all hover:bg-indigo-600 hover:text-white">
+                                        <button className="group-btn flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-50 py-3 text-xs font-bold text-slate-800 transition-all hover:bg-teal-600 hover:text-white">
                                             Lihat Detail <ChevronRight size={14} />
                                         </button>
                                     </div>
@@ -235,8 +237,11 @@ export default function Home({ auth, items }: Props) {
                     <div className="mb-16 grid grid-cols-1 gap-12 sm:grid-cols-2 md:grid-cols-4">
                         <div className="sm:col-span-2 md:col-span-1">
                             <div className="mb-6 flex items-center gap-2 text-2xl font-bold text-white">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">K</div>
-                                Kembaliin
+                                <img
+                                    src="/logo.png"
+                                    alt="Kembaliin Logo"
+                                    className="h-6 w-auto brightness-0 invert" // Class ini akan memutihkan logo secara otomatis!
+                                />
                             </div>
                             <p className="max-w-xs text-sm leading-relaxed text-slate-400">
                                 Platform komunitas sosial untuk membantu sesama menemukan barang yang hilang dengan aman dan mudah.

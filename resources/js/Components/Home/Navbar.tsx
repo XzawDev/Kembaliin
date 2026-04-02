@@ -16,9 +16,8 @@ export default function Navbar() {
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between md:h-20">
                     {/* Logo */}
-                    <Link href="/home" className="flex items-center gap-2 text-xl font-bold text-indigo-600 md:text-2xl">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg md:h-9 md:w-9">K</div>
-                        <span className="tracking-tight text-slate-800">Kembaliin</span>
+                    <Link href="/home" className="flex items-center">
+                        <img src="/logo.png" alt="Kembaliin Logo" className="h-5 w-auto transition-all duration-300 hover:opacity-80 md:h-7" />
                     </Link>
 
                     {/* Desktop Links */}
@@ -78,7 +77,7 @@ export default function Navbar() {
                                 </Link>
                                 <Link
                                     href="/Siswa/dashboard"
-                                    className="flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-100 transition-all hover:bg-indigo-700 md:px-6 md:py-3 md:text-sm"
+                                    className="flex items-center gap-2 rounded-full bg-teal-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-teal-100 transition-all hover:bg-teal-700 md:px-6 md:py-3 md:text-sm"
                                 >
                                     <PlusCircle size={18} className="xs:block hidden" />
                                     Laporkan
