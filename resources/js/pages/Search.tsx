@@ -2,7 +2,20 @@ import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import Navbar from '@/Components/Home/Navbar';
 import SearchFilters from '@/Components/Home/SearchFilter';
-import { Search as SearchIcon, X, MapPin, PackageSearch, ArrowRight, SlidersHorizontal } from 'lucide-react';
+import {
+    Search as SearchIcon,
+    X,
+    MapPin,
+    PackageSearch,
+    ArrowRight,
+    SlidersHorizontal,
+    Calendar,
+    Tag,
+    ChevronRight,
+    Instagram,
+    Twitter,
+    Facebook,
+} from 'lucide-react';
 
 interface Category {
     id: number;
@@ -148,14 +161,15 @@ export default function Search({ items, filters, categories }: Props) {
                             </div>
 
                             {items.data.length > 0 ? (
-                                <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
+                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-3 xl:grid-cols-4">
                                     {items.data.map((item) => (
                                         <Link
                                             key={item.id}
                                             href={`/items/${item.id}`}
-                                            className="group flex flex-col rounded-2xl border border-slate-100 bg-white p-3 transition-all hover:shadow-xl md:rounded-3xl md:p-5"
+                                            className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-300 hover:shadow-lg md:rounded-3xl"
                                         >
-                                            <div className="relative aspect-square overflow-hidden rounded-xl md:rounded-2xl">
+                                            {/* GAMBAR */}
+                                            <div className="relative aspect-square overflow-hidden">
                                                 <img
                                                     src={
                                                         item.image_url ||
@@ -164,27 +178,50 @@ export default function Search({ items, filters, categories }: Props) {
                                                     alt={item.name}
                                                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                                                 />
-                                                <div className="absolute top-2 left-2 md:top-3 md:left-3">
-                                                    <StatusBadge status={item.display_status} />
-                                                </div>
                                             </div>
-                                            <div className="px-1 pt-3 pb-2 md:pt-4">
-                                                <span className="mb-1 block text-[10px] font-black tracking-widest text-indigo-500 uppercase md:text-xs">
-                                                    {item.category.name}
-                                                </span>
-                                                <h4 className="mb-2 line-clamp-1 text-sm font-bold text-slate-900 transition-colors group-hover:text-indigo-600 md:text-base">
-                                                    {item.name}
-                                                </h4>
-                                                <div className="mb-3 flex items-center gap-1.5 text-slate-400">
-                                                    <MapPin size={12} className="flex-shrink-0 md:hidden" />
-                                                    <MapPin size={14} className="hidden flex-shrink-0 md:block" />
-                                                    <span className="line-clamp-1 text-[10px] font-medium md:text-xs">{item.location}</span>
+
+                                            {/* KONTEN */}
+                                            <div className="p-3 pt-2 md:p-5 md:pt-3">
+                                                {/* 1. Status */}
+                                                <div className="mb-0.5 md:mb-1">
+                                                    <span
+                                                        className={`text-[10px] leading-none font-extrabold tracking-widest uppercase md:text-xs ${
+                                                            item.display_status === 'hilang' ? 'text-red-500' : 'text-emerald-500'
+                                                        }`}
+                                                    >
+                                                        • {item.display_status === 'hilang' ? 'HILANG' : 'DITEMUKAN'}
+                                                    </span>
                                                 </div>
-                                                <div className="flex items-center justify-between text-[10px] font-bold text-indigo-600 md:text-xs">
-                                                    <span>Lihat Detail</span>
-                                                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-50 transition-all group-hover:bg-indigo-600 group-hover:text-white md:h-7 md:w-7">
-                                                        <ArrowRight size={12} />
+
+                                                {/* 2. Judul Barang */}
+                                                <h3 className="mb-2 line-clamp-1 text-sm font-bold text-slate-900 md:mb-3 md:text-lg">{item.name}</h3>
+
+                                                {/* 3. Meta Detail */}
+                                                <div className="mb-3 space-y-1 md:mb-4 md:space-y-1.5">
+                                                    {/* Kategori */}
+                                                    <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-500 md:text-xs">
+                                                        <Tag size={12} className="shrink-0 text-slate-400 md:h-3.5 md:w-3.5" />
+                                                        <span className="truncate">{item.category.name}</span>
                                                     </div>
+
+                                                    {/* Lokasi */}
+                                                    <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-500 md:text-xs">
+                                                        <MapPin size={12} className="shrink-0 text-slate-400 md:h-3.5 md:w-3.5" />
+                                                        <span className="truncate">{item.location}</span>
+                                                    </div>
+
+                                                    {/* Tanggal */}
+                                                    <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-500 md:text-xs">
+                                                        <Calendar size={12} className="shrink-0 text-slate-400 md:h-3.5 md:w-3.5" />
+                                                        <span className="truncate">
+                                                            {new Date(item.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* CTA Detail - Diubah menjadi <div> agar valid di dalam <Link> */}
+                                                <div className="flex w-full items-center justify-center gap-1 rounded-xl bg-slate-50 py-2.5 text-[10px] font-bold text-slate-800 transition-all group-hover:bg-indigo-600 group-hover:text-white md:rounded-2xl md:py-3 md:text-xs">
+                                                    Detail <ChevronRight size={12} className="md:h-4 md:w-4" />
                                                 </div>
                                             </div>
                                         </Link>
@@ -256,19 +293,75 @@ export default function Search({ items, filters, categories }: Props) {
                     </div>
                 )}
             </main>
+
+            {/* Footer */}
+            <footer className="bg-slate-900 pt-16 pb-8 text-white md:pt-20 md:pb-10">
+                <div className="mx-auto max-w-7xl px-4 lg:px-8">
+                    <div className="mb-12 grid grid-cols-2 gap-8 md:mb-16 md:grid-cols-4 md:gap-12">
+                        <div className="col-span-2 md:col-span-1">
+                            <div className="mb-4 flex items-center gap-2 text-xl font-bold text-white md:mb-6 md:text-2xl">
+                                <img src="/logo.png" alt="Kembaliin Logo" className="h-5 w-auto brightness-0 invert md:h-6" />
+                            </div>
+                            <p className="max-w-xs text-xs leading-relaxed text-slate-400 md:text-sm">
+                                Platform komunitas sekolah untuk membantu sesama menemukan barang yang hilang dengan aman.
+                            </p>
+                        </div>
+                        <div>
+                            <h4 className="mb-4 text-[10px] font-bold tracking-widest text-slate-500 uppercase md:mb-6 md:text-sm">Tautan</h4>
+                            <ul className="space-y-2 text-xs font-medium text-slate-400 md:space-y-4 md:text-sm">
+                                <li>
+                                    <a href="#" className="hover:text-white">
+                                        Cari Barang
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" className="hover:text-white">
+                                        Laporkan
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" className="hover:text-white">
+                                        Bantuan
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="mb-4 text-[10px] font-bold tracking-widest text-slate-500 uppercase md:mb-6 md:text-sm">Hukum</h4>
+                            <ul className="space-y-2 text-xs font-medium text-slate-400 md:space-y-4 md:text-sm">
+                                <li>
+                                    <a href="#" className="hover:text-white">
+                                        Privasi
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" className="hover:text-white">
+                                        Ketentuan
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="col-span-2 md:col-span-1">
+                            <h4 className="mb-4 text-[10px] font-bold tracking-widest text-slate-500 uppercase md:mb-6 md:text-sm">Social</h4>
+                            <div className="flex gap-3 md:gap-4">
+                                <SocialLink icon={<Facebook size={18} />} />
+                                <SocialLink icon={<Twitter size={18} />} />
+                                <SocialLink icon={<Instagram size={18} />} />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="border-t border-slate-800 pt-8 text-center text-[10px] text-slate-500 md:pt-10 md:text-xs">
+                        © 2024 Kembaliin Indonesia. All rights reserved.
+                    </div>
+                </div>
+            </footer>
         </div>
     );
-}
-
-function StatusBadge({ status }: { status: string }) {
-    const isLost = status === 'hilang';
-    return (
-        <span
-            className={`rounded-lg border border-white/20 px-2 py-1 text-[8px] font-black tracking-widest uppercase shadow-sm backdrop-blur-md md:px-3 md:py-1.5 md:text-[10px] ${
-                isLost ? 'bg-red-600 text-white' : 'bg-emerald-500/90 text-white'
-            }`}
-        >
-            {isLost ? 'HILANG' : 'DITEMUKAN'}
-        </span>
-    );
+    function SocialLink({ icon }: { icon: React.ReactNode }) {
+        return (
+            <a href="#" className="rounded-full bg-slate-800 p-2.5 transition-all hover:bg-teal-600 md:p-3">
+                {icon}
+            </a>
+        );
+    }
 }
