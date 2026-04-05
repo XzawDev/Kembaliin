@@ -1,8 +1,28 @@
-import { Head, Link, useForm } from '@inertiajs/react';
-import React, { useState } from 'react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
 
 export default function Login() {
+    const { auth } = usePage().props as any;
     const [showInfo, setShowInfo] = useState(false);
+
+    // === PALING PENTING: Redirect jika sudah login ===
+    useEffect(() => {
+        if (auth?.user) {
+            // Ganti halaman saat ini dengan home tanpa menambah history
+            window.location.replace('/home');
+        }
+    }, [auth]);
+
+    // Juga tangani event pageshow untuk bfcache
+    useEffect(() => {
+        const handlePageshow = (event: PageTransitionEvent) => {
+            if (event.persisted && auth?.user) {
+                window.location.replace('/home');
+            }
+        };
+        window.addEventListener('pageshow', handlePageshow);
+        return () => window.removeEventListener('pageshow', handlePageshow);
+    }, [auth]);
 
     const { data, setData, post, processing, errors } = useForm({
         email: '',
@@ -13,7 +33,6 @@ export default function Login() {
         e.preventDefault();
         post('/login');
     };
-
     return (
         <div className="flex min-h-screen items-center justify-center bg-[#F4F7F6] p-4 font-sans sm:p-8">
             <Head title="Masuk - Kembaliin" />

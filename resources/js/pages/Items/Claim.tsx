@@ -10,12 +10,12 @@ interface Question {
 
 interface Item {
     id: number;
+    slug: string; // <-- tambahkan ini
     name: string;
 }
 
 export default function Claim({ item, questions }: { item: Item; questions: Question[] }) {
     const [answers, setAnswers] = React.useState<Record<number, string>>({});
-    // const [description, setDescription] = React.useState('');
     const [processing, setProcessing] = React.useState(false);
 
     const handleAnswerChange = (questionId: number, value: string) => {
@@ -34,9 +34,9 @@ export default function Claim({ item, questions }: { item: Item; questions: Ques
             answer: ans,
         }));
         setProcessing(true);
-        router.post(`/claim/${item.id}`, {
+        // Gunakan slug, bukan id
+        router.post(`/claim/${item.slug}`, {
             answers: answersArray,
-            // description: description,
         });
     };
 
@@ -62,15 +62,6 @@ export default function Claim({ item, questions }: { item: Item; questions: Ques
                                     />
                                 </div>
                             ))}
-                            {/* <div>
-                                <label className="block text-sm font-medium text-slate-700">Deskripsi tambahan (opsional)</label>
-                                <textarea
-                                    className="mt-1 w-full rounded-lg border border-slate-200 p-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                                    rows={3}
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                />
-                            </div> */}
                             <button
                                 type="submit"
                                 disabled={processing}

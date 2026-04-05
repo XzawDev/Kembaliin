@@ -4,7 +4,12 @@ import { Package, Clock, CheckCircle2, AlertCircle, MoreVertical } from 'lucide-
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 
-type Stats = { total: number; hilang: number; dititipkan: number; dikembalikan: number };
+type Stats = {
+    total_barang: number;
+    barang_hilang: number;
+    barang_ditemukan: number;
+    pengajuan_klaim: number;
+};
 type Item = {
     id: number;
     name: string;
@@ -27,22 +32,29 @@ export default function Dashboard({ auth, stats, items }: Props) {
 
             <div className="mb-6 md:mb-8">
                 <h1 className="text-xl font-bold tracking-tight text-slate-900 md:text-2xl">Dashboard Overview</h1>
-                <p className="mt-1 text-xs text-slate-500 md:text-sm">Halo {auth.user.name}, berikut ringkasan laporan terbaru Anda.</p>
+                <p className="mt-1 text-xs text-slate-500 md:text-sm">
+                    Halo <span className="font-semibold">{auth.user.name}</span>, berikut ringkasan laporan terbaru Anda.
+                </p>
             </div>
 
             {/* Stats Grid: 2 kolom di mobile, 4 kolom di desktop */}
             <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:gap-6 lg:grid-cols-4">
-                <StatCard title="Total Barang" value={stats.total} icon={<Package className="text-blue-600" />} bg="bg-blue-50" />
-                <StatCard title="Barang Hilang" value={stats.hilang} icon={<AlertCircle className="text-red-600" />} bg="bg-red-50" />
-                <StatCard title="Dititipkan" value={stats.dititipkan} icon={<Clock className="text-amber-600" />} bg="bg-amber-50" />
-                <StatCard title="Dikembalikan" value={stats.dikembalikan} icon={<CheckCircle2 className="text-emerald-600" />} bg="bg-emerald-50" />
+                <StatCard title="Total Barang" value={stats.total_barang} icon={<Package className="text-blue-600" />} bg="bg-blue-50" />
+                <StatCard title="Barang Hilang" value={stats.barang_hilang} icon={<AlertCircle className="text-red-600" />} bg="bg-red-50" />
+                <StatCard
+                    title="Barang Ditemukan"
+                    value={stats.barang_ditemukan}
+                    icon={<CheckCircle2 className="text-green-600" />}
+                    bg="bg-green-50"
+                />
+                <StatCard title="Pengajuan Klaim" value={stats.pengajuan_klaim} icon={<Clock className="text-amber-600" />} bg="bg-amber-50" />
             </div>
 
             {/* Table Section */}
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <div className="flex items-center justify-between border-b border-slate-100 p-4 md:p-5 lg:px-6">
                     <h2 className="font-bold text-slate-800">Barang Terbaru</h2>
-                    <Link href="/Siswa/laporan" className="text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-700">
+                    <Link href="/Siswa/laporan" className="text-sm font-semibold text-slate-600 transition-colors hover:text-indigo-700">
                         Lihat Semua
                     </Link>
                 </div>

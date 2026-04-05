@@ -1,5 +1,20 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Package, Clock, CheckCircle2, AlertCircle, Search, Bell, Menu, X, Settings, LogOut, ChevronDown } from 'lucide-react';
+import {
+    LayoutDashboard,
+    Package,
+    Clock,
+    CheckCircle2,
+    Send,
+    AlertCircle,
+    Search,
+    Bell,
+    Menu,
+    X,
+    Settings,
+    LogOut,
+    ChevronDown,
+    Home,
+} from 'lucide-react';
 import { router, Link, usePage } from '@inertiajs/react';
 
 export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
@@ -23,11 +38,10 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
                 className={`fixed inset-y-0 left-0 z-50 flex w-64 transform flex-col border-r border-slate-200 bg-white transition-transform duration-200 ease-in-out md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
                 <div className="flex items-center justify-between p-6">
-                    <div className="flex items-center gap-2 text-xl font-bold text-indigo-600">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-lg shadow-indigo-200">
-                            K
-                        </div>
-                        Kembaliin
+                    <div className="flex items-center gap-2 text-xl font-bold text-teal-600">
+                        <Link href="/home" className="flex items-center">
+                            <img src="/logo.png" alt="Kembaliin Logo" className="h-5 w-auto transition-all duration-300 hover:opacity-80 md:h-6" />
+                        </Link>
                     </div>
                     <button className="p-1 text-slate-400 md:hidden" onClick={() => setIsSidebarOpen(false)}>
                         <X size={20} />
@@ -43,11 +57,18 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
                         active={isActive('/Siswa/dashboard')}
                     />
                     <SidebarLink href="/items/create" icon={<AlertCircle size={20} />} label="Laporkan Barang" active={isActive('/items/create')} />
-                    <SidebarLink href="/Siswa/laporan" icon={<Package size={20} />} label="Semua Laporan" />
+                    <SidebarLink
+                        href="/siswa/pengajuan" // ← lowercase dan sesuai route
+                        icon={<Send size={20} />}
+                        label="Pengajuan Klaim"
+                        active={window.location.pathname === '/siswa/pengajuan'}
+                    />
+                    <SidebarLink href="/Siswa/laporan" icon={<Package size={20} />} label="Semua Laporan" active={isActive('/Siswa/laporan')} />
                     <SidebarLink href="#" icon={<Clock size={20} />} label="Riwayat" />
                 </nav>
 
                 <div className="space-y-1 border-t border-slate-100 p-4">
+                    <SidebarLink href="/" icon={<Home size={20} />} label="Beranda" />
                     <SidebarLink href="#" icon={<Settings size={20} />} label="Pengaturan" />
                     <button
                         onClick={() => router.post('/logout')}
@@ -72,7 +93,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
                             <input
                                 type="text"
                                 placeholder="Cari barang..."
-                                className="w-full rounded-xl border-transparent bg-slate-100 py-2 pr-4 pl-10 text-sm transition-all outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500"
+                                className="w-full rounded-xl border-transparent bg-slate-100 py-2 pr-4 pl-10 text-sm transition-all outline-none focus:bg-white focus:ring-2 focus:ring-teal-500"
                             />
                         </div>
                     </div>
@@ -86,9 +107,9 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
                         <div className="group flex cursor-pointer items-center gap-3">
                             <div className="hidden text-right md:block">
                                 <p className="text-sm leading-none font-bold text-slate-900">{auth.user.name}</p>
-                                <p className="mt-1 text-[10px] font-bold text-indigo-500 uppercase">{auth.user.role}</p>
+                                <p className="mt-1 text-[10px] font-bold text-teal-500 uppercase">{auth.user.role}</p>
                             </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 font-black text-white shadow-lg shadow-indigo-100">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-600 font-black text-white shadow-lg shadow-teal-50">
                                 {auth.user.name.charAt(0)}
                             </div>
                         </div>
@@ -107,7 +128,7 @@ function SidebarLink({ href, icon, label, active = false }: any) {
         <Link
             href={href}
             className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition-all ${
-                active ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600'
+                active ? 'bg-teal-600 text-white shadow-lg shadow-teal-50' : 'text-slate-500 hover:bg-slate-50 hover:text-teal-600'
             }`}
         >
             {icon}

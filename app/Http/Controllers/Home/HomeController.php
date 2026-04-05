@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Home;
 use App\Http\Controllers\Controller;
 use App\Models\Item;
 use Inertia\Inertia;
+use App\Enums\ReportType;
 
 class HomeController extends Controller
 {
@@ -16,23 +17,29 @@ class HomeController extends Controller
             ->limit(10)
             ->get()
             ->map(function ($item) {
+                // Ambil nilai string dari Enum (atau langsung string jika tidak di-cast)
+                $reportTypeVal = $item->report_type instanceof ReportType ? $item->report_type->value : $item->report_type;
+
                 // Compute display status for frontend
-                if ($item->report_type === 'hilang') {
+                if ($reportTypeVal === 'hilang') {
                     $item->display_status = 'hilang';
                 } else {
-                    $item->display_status = $item->handling_status ?? 'menunggu_penyerahan';
+                    $handlingStatusVal = $item->handling_status instanceof \App\Enums\HandlingStatus ? $item->handling_status->value : $item->handling_status;
+
+                    $item->display_status = $handlingStatusVal ?? 'menunggu_penyerahan';
                 }
+
                 // Get first image URL if exists
-                $item->image_url = $item->images->first()?->image_path 
-                    ? asset('storage/' . $item->images->first()->image_path) 
-                    : 'https://images.unsplash.com/placeholder.jpg'; // fallback
+                $firstImage = $item->images->first();
+                $item->image_url = $firstImage?->image_path ? asset('storage/' . $firstImage->image_path) : 'https://images.unsplash.com/placeholder.jpg'; // fallback
+
                 return $item;
             });
 
         $stats = [
-            'total'        => Item::count(),
-            'hilang'       => Item::where('report_type', 'hilang')->count(),
-            'dititipkan'   => Item::where('handling_status', 'dititipkan_petugas')->count(),
+            'total' => Item::count(),
+            'hilang' => Item::where('report_type', 'hilang')->count(),
+            'dititipkan' => Item::where('handling_status', 'dititipkan_petugas')->count(),
             'dikembalikan' => Item::where('handling_status', 'dikembalikan')->count(),
         ];
 

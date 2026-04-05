@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Models\User;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Home\SearchController;
 use App\Http\Controllers\Auth\LoginController;
@@ -18,15 +19,19 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\HistoryController;
 use App\Http\Controllers\Admin\QrVerificationController;
 
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
+
 // Redirect root to home
 Route::get('/', fn() => redirect('/home'));
 
-// Guest routes
-Route::get('/register', fn() => Inertia::render('Auth/Register'))->name('register');
-Route::post('/register', [RegisterController::class, 'storeRegister'])->name('register.store');
+Route::middleware(['guest', 'no-cache'])->group(function () {
+    Route::get('/register', fn() => Inertia::render('Auth/Register'))->name('register');
+    Route::post('/register', [RegisterController::class, 'storeRegister'])->name('register.store');
 
-Route::get('/login', fn() => Inertia::render('Auth/Login'))->name('login');
-Route::post('/login', [LoginController::class, 'storeLogin'])->name('login.store');
+    Route::get('/login', fn() => Inertia::render('Auth/Login'))->name('login');
+    Route::post('/login', [LoginController::class, 'storeLogin'])->name('login.store');
+});
 
 // Public routes (no login required)
 Route::get('/home', [HomeController::class, 'index'])->name('home');
@@ -48,10 +53,10 @@ Route::middleware(['auth'])->group(function () {
     Route::match(['put', 'patch'], '/items/{item}', [ItemController::class, 'update'])->name('items.update');
     Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
 
-    // Owner detail item (with edit/delete controls)
+    // Owner detail item
     Route::get('/siswa/items/{item}', [ItemController::class, 'showForOwner'])->name('siswa.items.show');
 
-    // Claim verification (API for modal)
+    // Claim verification (API)
     Route::get('/items/{item}/questions', [ClaimController::class, 'getQuestions'])->name('items.questions');
     Route::post('/items/{item}/verify-claim', [ClaimController::class, 'store'])->name('items.verify-claim');
 
@@ -59,60 +64,78 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/claim/{item}', [ClaimController::class, 'create'])->name('claim.create');
     Route::post('/claim/{item}', [ClaimController::class, 'storeClaim'])->name('claim.store');
 
-    // Claim result pages (success, failed, error)
-    Route::get('/claim/success/{item}', function (App\Models\Item $item) {
-        return Inertia::render('Items/SuksesKlaim', [
-            'item' => $item,
-            'message' => session('message', 'Klaim berhasil'),
-            'contact' => session('contact'),
-            'officer_contact' => session('officer_contact', 'Hubungi petugas'),
-        ]);
-    })->name('claim.success');
+    // Claim result pages
+    Route::get('/claim/success/{item}', [ClaimController::class, 'success'])->name('claim.success');
+    Route::get('/claim/failed/{item}', [ClaimController::class, 'failed'])->name('claim.failed');
+    Route::get('/claim/error/{item}', [ClaimController::class, 'error'])->name('claim.error');
+    Route::get('/claim/already/{item}', [ClaimController::class, 'already'])->name('claim.already');
 
-    Route::get('/claim/failed/{item}', function (App\Models\Item $item) {
-        return Inertia::render('Items/GagalKlaim', [
-            'item' => $item,
-            'message' => session('message', 'Klaim gagal. Silakan coba lagi.'),
-        ]);
-    })->name('claim.failed');
-
-    Route::get('/claim/error/{item}', function (App\Models\Item $item) {
-        return Inertia::render('Items/ErrorKlaim', [
-            'item' => $item,
-            'message' => session('message', 'Terjadi kesalahan sistem.'),
-        ]);
-    })->name('claim.error');
+    Route::get('/siswa/pengajuan', [ClaimController::class, 'index'])->name('siswa.pengajuan');
+    // API untuk refresh data
+    Route::get('/claim/success-data/{item}', [ClaimController::class, 'getClaimData'])->name('claim.data');
 
     // Officer routes (role petugas)
     Route::middleware(['auth', 'role:petugas'])
         ->prefix('officer')
         ->name('officer.')
         ->group(function () {
-            // Dashboard
             Route::get('/dashboard', [OfficerDashboardController::class, 'index'])->name('dashboard');
-
-            // Item management
             Route::get('/items', [OfficerItemController::class, 'items'])->name('items');
             Route::get('/items/{item}', [OfficerItemController::class, 'showItem'])->name('items.show');
             Route::match(['put', 'patch'], '/items/{item}', [OfficerItemController::class, 'updateItem'])->name('items.update');
             Route::get('/items/by-token/{token}', [OfficerItemController::class, 'showItemByToken'])->name('items.by-token');
-
-            // Category management
             Route::get('/categories', [CategoryController::class, 'categories'])->name('categories');
             Route::get('/categories/create', [CategoryController::class, 'createCategory'])->name('categories.create');
             Route::post('/categories', [CategoryController::class, 'storeCategory'])->name('categories.store');
             Route::get('/categories/{category}/edit', [CategoryController::class, 'editCategory'])->name('categories.edit');
             Route::put('/categories/{category}', [CategoryController::class, 'updateCategory'])->name('categories.update');
             Route::delete('/categories/{category}', [CategoryController::class, 'destroyCategory'])->name('categories.destroy');
-
-            // History
             Route::get('/history', [HistoryController::class, 'history'])->name('history');
-
-            // QR verification (handover)
             Route::get('/verify', [QrVerificationController::class, 'verifyQrPage'])->name('verify');
             Route::post('/items/{item}/verify-handover', [QrVerificationController::class, 'verifyItemHandover'])->name('items.verify-handover');
         });
 });
 
-// Public item detail – MUST be last to avoid conflicts with specific routes above
+Route::get('/email/verify', function () {
+    return inertia('Auth/VerifyEmail');
+})
+    ->middleware('auth')
+    ->name('verification.notice');
+
+// Proses verifikasi manual (tanpa EmailVerificationRequest)
+Route::get('/email/verify/{id}/{hash}', function ($id, $hash) {
+    $user = User::findOrFail($id);
+    // Verifikasi hash secara manual
+    if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
+        abort(403, 'Link verifikasi tidak valid.');
+    }
+    return inertia('Auth/VerifyEmailPage', [
+        'id' => $id,
+        'hash' => $hash,
+        'email' => $user->email,
+    ]);
+})->name('verification.verify');
+
+// Proses verifikasi (POST)
+Route::post('/email/verify/{id}/{hash}', function ($id, $hash) {
+    $user = User::findOrFail($id);
+    if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
+        return response()->json(['message' => 'Link verifikasi tidak valid.'], 403);
+    }
+    if ($user->hasVerifiedEmail()) {
+        return response()->json(['message' => 'Email sudah diverifikasi.'], 400);
+    }
+    $user->markEmailAsVerified();
+    return response()->json(['message' => 'Email berhasil diverifikasi!']);
+})->name('verification.verify.post');
+
+// Kirim ulang notifikasi
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    return back()->with('success', 'Link verifikasi baru telah dikirim.');
+})
+    ->middleware(['auth', 'throttle:6,1'])
+    ->name('verification.send');
+
+// Public item detail – menggunakan route model binding (slug)
 Route::get('/items/{item}', [ItemController::class, 'show'])->name('items.show');

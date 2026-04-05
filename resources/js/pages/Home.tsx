@@ -37,6 +37,7 @@ type Stats = {
 
 type Item = {
     id: number;
+    slug: string;
     name: string;
     category: { name: string };
     location: string;
@@ -70,7 +71,8 @@ export default function Home({ auth, items }: Props) {
             <Navbar />
 
             {/* Hero Section */}
-            <header className="relative px-4 pt-24 pb-12 md:pt-48 md:pb-32">
+            {/* Hero Section - Diperbesar untuk mobile */}
+            <header className="relative px-4 pt-32 pb-20 md:pt-48 md:pb-32">
                 <div className="relative z-10 mx-auto max-w-7xl text-center">
                     <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-teal-50 px-3 py-1.5 text-[10px] font-bold tracking-widest text-teal-600 uppercase md:px-4 md:py-2 md:text-xs">
                         <span className="relative flex h-3 w-3 items-center justify-center md:h-4 md:w-4">
@@ -79,11 +81,11 @@ export default function Home({ auth, items }: Props) {
                         </span>
                         Platform Sekolah
                     </div>
-                    <h1 className="mb-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-5xl md:mb-6 md:text-7xl">
+                    <h1 className="mb-4 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl md:mb-6 md:text-7xl">
                         Menemukan Barang <br className="hidden md:block" />
                         <span className="text-teal-600">Jadi Lebih Mudah.</span>
                     </h1>
-                    <p className="mx-auto mb-8 max-w-xl text-xs leading-relaxed text-slate-500 md:mb-10 md:text-lg">
+                    <p className="mx-auto mb-10 max-w-xl text-sm leading-relaxed text-slate-500 md:mb-10 md:text-lg">
                         Website yang membantu siswa untuk menemukan barang yang hilang atau mengembalikan barang yang ditemukan.
                     </p>
 
@@ -112,6 +114,7 @@ export default function Home({ auth, items }: Props) {
 
             {/* 🌟 SECTION CARA KERJA (STANDALONE - MUTLI-COLOR HOVER) 🌟 */}
             <section className="bg-white py-10 md:py-16">
+                {/* ... (konten cara kerja tetap sama seperti kode asli) ... */}
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="mb-8 text-center md:mb-12">
                         <h2 className="text-xl font-extrabold text-slate-900 md:text-3xl">Cara Kerja Sistem</h2>
@@ -121,11 +124,9 @@ export default function Home({ auth, items }: Props) {
                     </div>
 
                     <div className="relative mx-auto max-w-6xl">
-                        {/* Garis Penghubung (Hanya muncul di Desktop) */}
                         <div className="absolute top-8 left-[12.5%] hidden w-[75%] border-t-2 border-dashed border-slate-200 lg:block"></div>
-
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-                            {/* Langkah 1 - HOVER SKY */}
+                            {/* Langkah 1 */}
                             <div className="group relative z-10 flex flex-col items-center text-center">
                                 <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 transition-all duration-300 group-hover:-translate-y-1 group-hover:bg-sky-50 group-hover:text-sky-600 group-hover:shadow-lg group-hover:shadow-sky-100/50 md:h-16 md:w-16 md:rounded-[1.25rem]">
                                     <Search size={24} className="md:h-7 md:w-7" />
@@ -135,8 +136,7 @@ export default function Home({ auth, items }: Props) {
                                     Pengguna dapat melaporkan barang yang hilang atau ditemukan melalui platform dengan menyertakan detail dan foto.
                                 </p>
                             </div>
-
-                            {/* Langkah 2 - HOVER AMBER */}
+                            {/* Langkah 2 */}
                             <div className="group relative z-10 flex flex-col items-center text-center">
                                 <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 transition-all duration-300 group-hover:-translate-y-1 group-hover:bg-amber-50 group-hover:text-amber-600 group-hover:shadow-lg group-hover:shadow-amber-100/50 md:h-16 md:w-16 md:rounded-[1.25rem]">
                                     <QrCode size={24} className="md:h-7 md:w-7" />
@@ -146,8 +146,7 @@ export default function Home({ auth, items }: Props) {
                                     Barang yang ditemukan diserahkan kepada petugas untuk diamankan dan dicatat ke dalam sistem menggunakan QR Code.
                                 </p>
                             </div>
-
-                            {/* Langkah 3 - HOVER TEAL (TOSKA) */}
+                            {/* Langkah 3 */}
                             <div className="group relative z-10 flex flex-col items-center text-center">
                                 <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 transition-all duration-300 group-hover:-translate-y-1 group-hover:bg-teal-50 group-hover:text-teal-600 group-hover:shadow-lg group-hover:shadow-teal-100/50 md:h-16 md:w-16 md:rounded-[1.25rem]">
                                     <ShieldQuestion size={24} className="md:h-7 md:w-7" />
@@ -157,8 +156,7 @@ export default function Home({ auth, items }: Props) {
                                     Pemilik asli dapat mengajukan klaim kepemilikan dengan menjawab pertanyaan keamanan untuk tujuan verifikasi.
                                 </p>
                             </div>
-
-                            {/* Langkah 4 - HOVER EMERALD */}
+                            {/* Langkah 4 */}
                             <div className="group relative z-10 flex flex-col items-center text-center">
                                 <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 transition-all duration-300 group-hover:-translate-y-1 group-hover:bg-emerald-50 group-hover:text-emerald-600 group-hover:shadow-lg group-hover:shadow-emerald-100/50 md:h-16 md:w-16 md:rounded-[1.25rem]">
                                     <CheckCircle size={24} className="md:h-7 md:w-7" />
@@ -205,7 +203,7 @@ export default function Home({ auth, items }: Props) {
                         {filteredItems.length > 0 ? (
                             filteredItems.map((item) => (
                                 <div
-                                    key={item.id}
+                                    key={item.slug}
                                     className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-300 hover:shadow-lg md:rounded-3xl"
                                 >
                                     {/* GAMBAR */}
@@ -260,9 +258,12 @@ export default function Home({ auth, items }: Props) {
                                         </div>
 
                                         {/* Tombol Detail - Punya jarak paling besar dari atasnya agar tidak sesak */}
-                                        <button className="flex w-full items-center justify-center gap-1 rounded-xl bg-slate-50 py-2.5 text-[10px] font-bold text-slate-800 transition-all hover:bg-teal-600 hover:text-white md:rounded-2xl md:py-3 md:text-xs">
+                                        <Link
+                                            href={`/items/${item.slug}`}
+                                            className="flex w-full items-center justify-center gap-1 rounded-xl bg-slate-50 py-2.5 text-[10px] font-bold text-slate-800 transition-all hover:bg-teal-600 hover:text-white md:rounded-xl md:py-3 md:text-xs"
+                                        >
                                             Detail <ChevronRight size={12} className="md:h-4 md:w-4" />
-                                        </button>
+                                        </Link>
                                     </div>
                                 </div>
                             ))
@@ -272,9 +273,12 @@ export default function Home({ auth, items }: Props) {
                     </div>
 
                     <div className="mt-10 text-center md:mt-20">
-                        <button className="rounded-full border border-slate-200 bg-white px-8 py-3 text-xs font-bold text-slate-600 shadow-sm transition-all hover:border-teal-600 hover:text-teal-600 md:px-10 md:py-4 md:text-sm">
-                            Muat Lebih Banyak
-                        </button>
+                        <Link
+                            href="/search"
+                            className="rounded-full border border-slate-200 bg-white px-8 py-3 text-xs font-bold text-slate-600 shadow-sm transition-all hover:border-teal-600 hover:text-teal-600 md:px-10 md:py-4 md:text-sm"
+                        >
+                            Cari Laporan Lainnya
+                        </Link>
                     </div>
                 </div>
             </section>

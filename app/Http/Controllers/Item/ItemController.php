@@ -110,30 +110,33 @@ class ItemController extends Controller
         return redirect()->route('dashboard')->with('success', 'Laporan barang hilang berhasil dikirim.');
     }
 
-    public function show(Item $item)
-    {
-        $item->load(['user', 'category', 'images', 'histories.user', 'user:id,name,no_hp,kelas']);
+    public function show($slug)
+{
+    $item = Item::where('slug', $slug)->firstOrFail();
+    
+    // Load relasi yang diperlukan
+    $item->load(['user', 'category', 'images', 'histories.user', 'user:id,name,no_hp,kelas']);
 
-        if ($item->trashed()) {
-            abort(404);
-        }
-
-        // Hitung display_status untuk frontend (status laporan secara visual)
-        if ($item->report_type === ReportType::HILANG) {
-            $item->display_status = 'hilang';
-        } else {
-            $item->display_status = $item->handling_status ?? 'menunggu_penyerahan';
-        }
-
-        $item->images->transform(function ($image) {
-            $image->url = asset('storage/' . $image->image_path);
-            return $image;
-        });
-
-        return Inertia::render('ItemDetail', [
-            'item' => $item,
-        ]);
+    if ($item->trashed()) {
+        abort(404);
     }
+
+    // Hitung display_status untuk frontend
+    if ($item->report_type === ReportType::HILANG) {
+        $item->display_status = 'hilang';
+    } else {
+        $item->display_status = $item->handling_status ?? 'menunggu_penyerahan';
+    }
+
+    // Transformasi gambar
+    $item->images->transform(function ($image) {
+        $image->url = asset('storage/' . $image->image_path);
+        return $image;
+    });
+
+    // Gunakan nama komponen yang sesuai dengan file React Anda (ItemDetail)
+    return inertia('ItemDetail', ['item' => $item]);
+}
 
     /**
      * Halaman detail item khusus untuk pemilik (dengan kontrol edit/hapus)

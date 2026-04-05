@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\Events\Registered;
 
 class RegisterController extends Controller
 {
@@ -20,7 +21,7 @@ class RegisterController extends Controller
             'password' => 'required|string|min:6|confirmed',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'no_hp' => $request->no_hp,
@@ -29,6 +30,13 @@ class RegisterController extends Controller
             'role' => 'siswa',
         ]);
 
-        return Redirect::to('/login')->with('success', 'Registrasi berhasil! Silakan login.');
+        // Auto-login setelah registrasi
+        Auth::login($user);
+
+        // Kirim email verifikasi
+        event(new Registered($user));
+
+        // Redirect ke halaman verifikasi email
+        return redirect()->route('verification.notice');
     }
 }

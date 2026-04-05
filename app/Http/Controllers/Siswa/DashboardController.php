@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
 use App\Models\Item;
+use App\Models\Claim; // tambahkan
 use App\Enums\ReportType;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -15,15 +16,22 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Stats – only for this user
+        // Laporan user
+        $totalLaporanHilang = Item::where('user_id', $user->id)->where('report_type', 'hilang')->count();
+        $totalLaporanDitemukan = Item::where('user_id', $user->id)->where('report_type', 'ditemukan')->count();
+        $totalLaporan = $totalLaporanHilang + $totalLaporanDitemukan;
+
+        // Klaim user
+        $totalKlaim = Claim::where('user_id', $user->id)->count();
+
         $stats = [
-            'total' => Item::where('user_id', $user->id)->count(),
-            'hilang' => Item::where('user_id', $user->id)->where('report_type', 'hilang')->count(),
-            'dititipkan' => Item::where('user_id', $user->id)->where('handling_status', 'dititipkan_petugas')->count(),
-            'dikembalikan' => Item::where('user_id', $user->id)->where('handling_status', 'dikembalikan')->count(),
+            'total_barang' => $totalLaporan + $totalKlaim, // total barang yang terkait user
+            'barang_hilang' => $totalLaporanHilang,
+            'barang_ditemukan' => $totalLaporanDitemukan,
+            'pengajuan_klaim' => $totalKlaim,
         ];
 
-        // Items – only for this user
+        // Items (laporan terbaru) tetap
         $items = Item::with(['category', 'user'])
             ->where('user_id', $user->id)
             ->latest()

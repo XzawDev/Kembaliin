@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Item;
 use App\Models\Claim;
 use App\Models\ClaimVerificationAnswer;
+use App\Models\User; // ← Tambahkan ini
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,32 +16,51 @@ use Inertia\Inertia;
 class ClaimController extends Controller
 {
     /**
-     * Tampilkan halaman klaim dengan pertanyaan-pertanyaan
-     * Jika user sudah pernah klaim, langsung redirect ke halaman hasil
+     * Tampilkan halaman klaim atau redirect sesuai status
      */
     public function create(Item $item)
     {
-        // Pastikan item bisa diklaim
+        // 1. Cek apakah ada klaim yang sudah disetujui (status APPROVED)
+        $approvedClaim = Claim::where('item_id', $item->id)->where('status', Claim::STATUS_APPROVED)->first();
+
+        if ($approvedClaim) {
+            // Jika user yang login adalah pemilik klaim tersebut, arahkan ke sukses
+            if ($approvedClaim->user_id === Auth::id()) {
+                $reporter = $item->user;
+                return redirect()
+                    ->route('claim.success', $item)
+                    ->with('message', 'Anda sudah berhasil mengklaim barang ini.')
+                    ->with('contact', [
+                        'name' => $reporter->name,
+                        'phone' => $reporter->no_hp ?? 'Tidak tersedia',
+                        'class' => $reporter->kelas ?? '-',
+                    ])
+                    ->with('officer_contact', 'Petugas: 08123456789'); // fallback, tidak masalah karena kasus ini jarang
+            }
+
+            // User lain mencoba mengklaim barang yang sudah diklaim
+            return redirect()->route('claim.already', $item)->with('message', 'Barang ini sudah diklaim oleh pengguna lain. Jika Anda merasa barang ini milik Anda, silakan hubungi petugas.');
+        }
+
+        // 2. Validasi item dapat diklaim
         if ($item->report_type->value !== 'ditemukan' || $item->report_status->value === 'ditutup') {
             abort(403, 'Item tidak dapat diklaim.');
         }
 
-        // Pastikan bukan pemilik item
+        // 3. Pemilik barang tidak bisa mengklaim sendiri
         if ($item->user_id === Auth::id()) {
             abort(403, 'Anda tidak dapat mengklaim barang sendiri.');
         }
 
-        // Cek apakah user sudah pernah mengajukan klaim untuk item ini
-        $existingClaim = Claim::where('item_id', $item->id)
-            ->where('user_id', Auth::id())
-            ->first();
+        // 4. Cek apakah user sudah memiliki klaim (pending/rejected)
+        $existingClaim = Claim::where('item_id', $item->id)->where('user_id', Auth::id())->first();
 
         if ($existingClaim) {
-            // Redirect ke halaman hasil berdasarkan status klaim
             switch ($existingClaim->status) {
                 case Claim::STATUS_APPROVED:
                     $reporter = $item->user;
-                    return redirect()->route('claim.success', $item->id)
+                    return redirect()
+                        ->route('claim.success', $item)
                         ->with('message', 'Anda sudah berhasil mengklaim barang ini.')
                         ->with('contact', [
                             'name' => $reporter->name,
@@ -49,18 +69,15 @@ class ClaimController extends Controller
                         ])
                         ->with('officer_contact', 'Petugas: 08123456789');
                 case Claim::STATUS_PENDING:
-                    return redirect()->route('claim.failed', $item->id)
-                        ->with('message', 'Anda sudah mengajukan klaim. Klaim sedang diproses petugas.');
+                    return redirect()->route('claim.failed', $item)->with('message', 'Anda sudah mengajukan klaim. Klaim sedang diproses petugas.');
                 case Claim::STATUS_REJECTED:
-                    return redirect()->route('claim.failed', $item->id)
-                        ->with('message', 'Klaim Anda ditolak. Silakan hubungi petugas.');
+                    return redirect()->route('claim.failed', $item)->with('message', 'Klaim Anda ditolak. Silakan hubungi petugas.');
                 default:
-                    return redirect()->route('claim.failed', $item->id)
-                        ->with('message', 'Status klaim tidak diketahui. Silakan hubungi petugas.');
+                    return redirect()->route('claim.failed', $item)->with('message', 'Status klaim tidak diketahui. Silakan hubungi petugas.');
             }
         }
 
-        // Jika belum pernah klaim, tampilkan form
+        // 5. Tampilkan form klaim dengan pertanyaan
         $questions = $item->verificationQuestions()->get(['id', 'question']);
         return Inertia::render('Items/Claim', [
             'item' => $item,
@@ -69,10 +86,16 @@ class ClaimController extends Controller
     }
 
     /**
-     * Memproses pengajuan klaim dari halaman web
+     * Memproses pengajuan klaim
      */
     public function storeClaim(Request $request, Item $item)
     {
+        // 1. Cek apakah sudah ada klaim approved dari user lain
+        $approvedClaim = Claim::where('item_id', $item->id)->where('status', Claim::STATUS_APPROVED)->first();
+        if ($approvedClaim && $approvedClaim->user_id !== Auth::id()) {
+            return redirect()->route('claim.already', $item)->with('message', 'Barang ini sudah diklaim oleh pengguna lain. Silakan hubungi petugas untuk bantuan lebih lanjut.');
+        }
+
         $request->validate([
             'answers' => 'required|array',
             'answers.*.question_id' => 'required|exists:item_verification_questions,id',
@@ -81,23 +104,19 @@ class ClaimController extends Controller
 
         $user = Auth::user();
 
-        // Validasi item
         if ($item->report_type->value !== 'ditemukan' || $item->report_status->value === 'ditutup') {
-            return redirect()->route('claim.failed', $item->id)
-                ->with('message', 'Item tidak dapat diklaim.');
+            return redirect()->route('claim.failed', $item)->with('message', 'Item tidak dapat diklaim.');
         }
 
-        // Cek apakah sudah pernah klaim
+        // Cek apakah user sudah pernah klaim (pending/rejected) untuk item ini
         $existingClaim = Claim::where('item_id', $item->id)->where('user_id', $user->id)->first();
         if ($existingClaim) {
-            return redirect()->route('claim.failed', $item->id)
-                ->with('message', 'Anda sudah mengajukan klaim untuk barang ini.');
+            return redirect()->route('claim.failed', $item)->with('message', 'Anda sudah mengajukan klaim untuk barang ini.');
         }
 
         $questions = $item->verificationQuestions()->get();
         $answersData = $request->answers;
 
-        // Verifikasi semua jawaban
         $allCorrect = true;
         foreach ($questions as $q) {
             $found = collect($answersData)->firstWhere('question_id', $q->id);
@@ -126,45 +145,158 @@ class ClaimController extends Controller
                 ]);
             }
 
+            // Jika klaim berhasil, ubah handling_status item menjadi 'diklaim'
+            if ($allCorrect) {
+                $item->handling_status = 'diklaim';
+                $item->save();
+            }
+
             DB::commit();
 
             if ($allCorrect) {
                 $reporter = $item->user;
-                return redirect()->route('claim.success', $item->id)
+
+                // Ambil data petugas langsung dari database berdasarkan verified_by yang sudah ada di item
+                $officer = null;
+                if ($item->verified_by) {
+                    $officer = User::find($item->verified_by);
+                }
+
+                if ($officer) {
+                    $officer_contact = [
+                        'name' => $officer->name,
+                        'phone' => $officer->no_hp ?? 'Tidak tersedia',
+                        'wa_link' => 'https://wa.me/' . ltrim($officer->no_hp, '0'),
+                    ];
+                } else {
+                    $officer_contact = [
+                        'name' => 'Petugas',
+                        'phone' => 'Hubungi kantor sekolah',
+                        'wa_link' => '#',
+                    ];
+                }
+
+                return redirect()
+                    ->route('claim.success', $item)
                     ->with('message', 'Jawaban benar! Anda dapat menghubungi pelapor.')
                     ->with('contact', [
                         'name' => $reporter->name,
                         'phone' => $reporter->no_hp ?? 'Tidak tersedia',
                         'class' => $reporter->kelas ?? '-',
                     ])
-                    ->with('officer_contact', 'Petugas: 08123456789');
+                    ->with('officer_contact', $officer_contact);
             } else {
-                return redirect()->route('claim.failed', $item->id)
-                    ->with('message', 'Jawaban Anda salah. Klaim akan diproses petugas.');
+                return redirect()->route('claim.failed', $item)->with('message', 'Jawaban Anda salah. Klaim akan diproses petugas.');
             }
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Claim store error: ' . $e->getMessage());
-            return redirect()->route('claim.error', $item->id)
-                ->with('message', 'Terjadi kesalahan sistem. Silakan coba lagi.');
+            return redirect()->route('claim.error', $item)->with('message', 'Terjadi kesalahan sistem. Silakan coba lagi.');
         }
     }
 
     /**
-     * Tampilkan halaman sukses klaim
+     * Halaman sudah diklaim (untuk user lain)
      */
-    public function success(Item $item)
+    public function already(Item $item)
     {
-        return Inertia::render('Items/SuksesKlaim', [
+        return Inertia::render('Items/AlreadyClaimed', [
             'item' => $item,
-            'message' => session('message', 'Klaim berhasil'),
-            'contact' => session('contact'),
-            'officer_contact' => session('officer_contact', 'Hubungi petugas'),
+            'message' => session('message', 'Barang ini sudah diklaim oleh pengguna lain. Silakan hubungi petugas.'),
+            'officer_contact' => session('officer_contact', 'Petugas: 08123456789'),
         ]);
     }
 
     /**
-     * Tampilkan halaman gagal klaim
+     * Halaman sukses klaim
+     */
+    public function success(Item $item)
+    {
+        $user = Auth::user();
+        $claim = Claim::where('item_id', $item->id)->where('user_id', $user->id)->where('status', Claim::STATUS_APPROVED)->first();
+
+        if ($claim) {
+            // Ambil pelapor hanya dengan kolom yang diperlukan
+            $reporter = $item->user()->first(['id', 'name', 'no_hp', 'kelas']);
+            $contact = [
+                'name' => $reporter->name,
+                'phone' => $reporter->no_hp ?? 'Tidak tersedia',
+                'class' => $reporter->kelas ?? '-',
+            ];
+
+            // Ambil petugas hanya dengan kolom yang diperlukan
+            $officer = $item->verifiedBy()->first(['id', 'name', 'no_hp']);
+            if ($officer) {
+                $officer_contact = [
+                    'name' => $officer->name,
+                    'phone' => $officer->no_hp ?? 'Tidak tersedia',
+                    'wa_link' => 'https://wa.me/' . ltrim($officer->no_hp, '0'),
+                ];
+            } else {
+                $officer_contact = [
+                    'name' => 'Petugas',
+                    'phone' => 'Hubungi kantor sekolah',
+                    'wa_link' => '#',
+                ];
+            }
+
+            $message = session('message', 'Anda sudah berhasil mengklaim barang ini.');
+        } else {
+            $contact = null;
+            $officer_contact = null;
+            $message = session('message', 'Klaim berhasil');
+        }
+
+        return Inertia::render('Items/SuksesKlaim', [
+            'item' => $item,
+            'message' => $message,
+            'contact' => $contact,
+            'officer_contact' => $officer_contact,
+        ]);
+    }
+
+    /**
+     * API endpoint untuk mengambil data klaim yang disetujui (digunakan saat refresh halaman)
+     */
+    public function getClaimData(Item $item)
+    {
+        $user = Auth::user();
+        $claim = Claim::where('item_id', $item->id)->where('user_id', $user->id)->where('status', Claim::STATUS_APPROVED)->first();
+
+        if (!$claim) {
+            return response()->json(['error' => 'No approved claim found'], 404);
+        }
+
+        $reporter = $item->user()->first(['id', 'name', 'no_hp', 'kelas']);
+        $officer = $item->verifiedBy()->first(['id', 'name', 'no_hp']);
+
+        if ($officer) {
+            $officer_contact = [
+                'name' => $officer->name,
+                'phone' => $officer->no_hp ?? 'Tidak tersedia',
+                'wa_link' => 'https://wa.me/' . ltrim($officer->no_hp, '0'),
+            ];
+        } else {
+            $officer_contact = [
+                'name' => 'Petugas',
+                'phone' => 'Hubungi kantor sekolah',
+                'wa_link' => '#',
+            ];
+        }
+
+        return response()->json([
+            'message' => 'Anda sudah berhasil mengklaim barang ini.',
+            'contact' => [
+                'name' => $reporter->name,
+                'phone' => $reporter->no_hp ?? 'Tidak tersedia',
+                'class' => $reporter->kelas ?? '-',
+            ],
+            'officer_contact' => $officer_contact,
+        ]);
+    }
+
+    /**
+     * Halaman gagal klaim
      */
     public function failed(Item $item)
     {
@@ -175,7 +307,7 @@ class ClaimController extends Controller
     }
 
     /**
-     * Tampilkan halaman error klaim
+     * Halaman error klaim
      */
     public function error(Item $item)
     {
@@ -251,10 +383,29 @@ class ClaimController extends Controller
                 ]);
             }
 
+            if ($allCorrect) {
+                $item->handling_status = 'diklaim';
+                $item->save();
+            }
+
             DB::commit();
 
             if ($allCorrect) {
                 $reporter = $item->user;
+                // Untuk API, kita tetap kirim array officer_contact yang benar
+                $officer = null;
+                if ($item->verified_by) {
+                    $officer = User::find($item->verified_by);
+                }
+                if ($officer) {
+                    $officer_contact = [
+                        'name' => $officer->name,
+                        'phone' => $officer->no_hp ?? 'Tidak tersedia',
+                        'wa_link' => 'https://wa.me/' . ltrim($officer->no_hp, '0'),
+                    ];
+                } else {
+                    $officer_contact = 'Petugas: 08123456789'; // fallback
+                }
                 return response()->json([
                     'success' => true,
                     'message' => 'Jawaban benar! Anda dapat menghubungi pelapor.',
@@ -263,7 +414,7 @@ class ClaimController extends Controller
                         'phone' => $reporter->no_hp ?? 'Tidak tersedia',
                         'class' => $reporter->kelas ?? '-',
                     ],
-                    'officer_contact' => 'Petugas: 08123456789',
+                    'officer_contact' => $officer_contact,
                 ]);
             } else {
                 return response()->json([
@@ -275,5 +426,33 @@ class ClaimController extends Controller
             DB::rollBack();
             return response()->json(['message' => 'Terjadi kesalahan'], 500);
         }
+    }
+
+    public function index()
+    {
+        $user = Auth::user();
+        $claims = Claim::with([
+            'item' => function ($query) {
+                $query->select('id', 'slug', 'name', 'handling_status', 'report_status', 'user_id');
+            },
+            'item.images',
+        ]) // muat relasi images
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        // Tambahkan image_url dari gambar pertama
+        $claims->getCollection()->transform(function ($claim) {
+            if ($claim->item && $claim->item->images->isNotEmpty()) {
+                $claim->item->image_url = asset('storage/' . $claim->item->images->first()->image_path);
+            } else {
+                $claim->item->image_url = null;
+            }
+            return $claim;
+        });
+
+        return Inertia::render('Siswa/PengajuanBarang', [
+            'claims' => $claims,
+        ]);
     }
 }

@@ -358,7 +358,7 @@ export default function CreateItem({ categories }: Props) {
                                 className={`flex items-center justify-center gap-2 rounded-lg px-6 py-2 text-sm font-bold shadow-md transition-all sm:rounded-xl sm:px-10 sm:py-3 sm:shadow-lg ${
                                     processing
                                         ? 'cursor-not-allowed bg-slate-400'
-                                        : 'bg-indigo-600 text-white hover:-translate-y-0.5 hover:bg-indigo-700 active:translate-y-0'
+                                        : 'bg-emerald-600 text-white hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0'
                                 }`}
                             >
                                 {processing ? (
