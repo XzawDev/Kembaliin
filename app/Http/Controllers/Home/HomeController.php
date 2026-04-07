@@ -11,30 +11,36 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $items = Item::with(['category', 'user', 'images'])
-            ->whereNull('deleted_at')
-            ->latest()
-            ->limit(10)
-            ->get()
-            ->map(function ($item) {
-                // Ambil nilai string dari Enum (atau langsung string jika tidak di-cast)
-                $reportTypeVal = $item->report_type instanceof ReportType ? $item->report_type->value : $item->report_type;
+$items = Item::with(['category', 'user', 'images'])
+    ->whereNull('deleted_at')
+    ->latest()
+    ->limit(10)
+    ->get()
+    ->map(function ($item) {
+        $reportTypeVal = $item->report_type instanceof ReportType ? $item->report_type->value : $item->report_type;
 
-                // Compute display status for frontend
-                if ($reportTypeVal === 'hilang') {
-                    $item->display_status = 'hilang';
-                } else {
-                    $handlingStatusVal = $item->handling_status instanceof \App\Enums\HandlingStatus ? $item->handling_status->value : $item->handling_status;
+        if ($reportTypeVal === 'hilang') {
+            $displayStatus = 'hilang';
+        } else {
+            $handlingStatusVal = $item->handling_status instanceof \App\Enums\HandlingStatus ? $item->handling_status->value : $item->handling_status;
+            $displayStatus = $handlingStatusVal ?? 'menunggu_penyerahan';
+        }
 
-                    $item->display_status = $handlingStatusVal ?? 'menunggu_penyerahan';
-                }
+        $firstImage = $item->images->first();
+        $imageUrl = $firstImage?->image_path ? asset('storage/' . $firstImage->image_path) : null;
 
-                // Get first image URL if exists
-                $firstImage = $item->images->first();
-                $item->image_url = $firstImage?->image_path ? asset('storage/' . $firstImage->image_path) : 'https://images.unsplash.com/placeholder.jpg'; // fallback
-
-                return $item;
-            });
+        return [
+            'id' => $item->id,
+            'slug' => $item->slug,
+            'name' => $item->name,
+            'category' => ['name' => $item->category->name ?? 'Tanpa Kategori'],
+            'location' => $item->location,
+            'date' => $item->date,
+            'display_status' => $displayStatus,
+            'image_url' => $imageUrl,
+            'user' => ['name' => $item->user->name ?? 'Anonim'],
+        ];
+    });
 
         $stats = [
             'total' => Item::count(),

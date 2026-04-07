@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Head, Link, usePage, router } from '@inertiajs/react';
 import Navbar from '@/Components/Home/Navbar';
 import {
@@ -105,6 +105,16 @@ export default function ItemDetail({ item }: Props) {
     const showClaimButton =
         !isLost && item.report_status !== 'ditutup' && item.handling_status !== 'dikembalikan' && item.handling_status !== 'diklaim' && claimLink;
 
+    const goBack = useCallback(() => {
+        // Cek apakah ada riwayat sebelumnya (setidaknya satu halaman sebelum ini)
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            // Fallback ke halaman pencarian jika tidak ada riwayat
+            router.get('/search');
+        }
+    }, []);
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
             <Head title={`${item.name} - Detail Barang`} />
@@ -114,13 +124,13 @@ export default function ItemDetail({ item }: Props) {
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     {/* Navigation */}
                     <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
-                        <Link
-                            href="/search"
+                        <button
+                            onClick={goBack}
                             className="group inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition-all hover:text-indigo-600"
                         >
                             <ChevronLeft size={18} className="transition-transform group-hover:-translate-x-0.5" />
                             <span>Kembali ke Jelajah</span>
-                        </Link>
+                        </button>
                     </div>
 
                     {/* Hero Section: Judul + Tipe Laporan */}
