@@ -40,9 +40,33 @@ export default function CreateItem({ categories }: Props) {
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
-        const validFiles = files.slice(0, 5 - data.images.length);
-        setData('images', [...data.images, ...validFiles]);
-        const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+        const maxSizeMB = 2; // 2 MB
+
+        // Filter file yang tidak valid
+        const validFiles = files.filter((file) => {
+            if (!allowedTypes.includes(file.type)) {
+                alert(`File "${file.name}" bukan gambar (format tidak didukung). Hanya JPEG, PNG, JPG, GIF.`);
+                return false;
+            }
+            if (file.size > maxSizeMB * 1024 * 1024) {
+                alert(`File "${file.name}" melebihi batas ${maxSizeMB} MB.`);
+                return false;
+            }
+            return true;
+        });
+
+        // Batasi maksimal 5 gambar
+        const remainingSlots = 5 - data.images.length;
+        const filesToAdd = validFiles.slice(0, remainingSlots);
+
+        if (filesToAdd.length === 0 && validFiles.length > 0) {
+            alert(`Maksimal 5 gambar. Anda sudah memiliki ${data.images.length} gambar.`);
+            return;
+        }
+
+        setData('images', [...data.images, ...filesToAdd]);
+        const newPreviews = filesToAdd.map((file) => URL.createObjectURL(file));
         setPreviews([...previews, ...newPreviews]);
     };
 
@@ -358,7 +382,7 @@ export default function CreateItem({ categories }: Props) {
                                 className={`flex items-center justify-center gap-2 rounded-lg px-6 py-2 text-sm font-bold shadow-md transition-all sm:rounded-xl sm:px-10 sm:py-3 sm:shadow-lg ${
                                     processing
                                         ? 'cursor-not-allowed bg-slate-400'
-                                        : 'bg-indigo-600 text-white hover:-translate-y-0.5 hover:bg-indigo-700 active:translate-y-0'
+                                        : 'bg-emerald-600 text-white hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0'
                                 }`}
                             >
                                 {processing ? (

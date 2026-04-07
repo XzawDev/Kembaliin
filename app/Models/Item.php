@@ -8,12 +8,21 @@ use App\Enums\HandlingStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Item extends Model
 {
     use SoftDeletes;
     use HasFactory;
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($item) {
+            $item->slug = Str::slug($item->name) . '-' . Str::random(5);
+        });
+    }
     protected $fillable = [
         'user_id',
         'category_id',
@@ -110,4 +119,13 @@ class Item extends Model
         return $this->hasMany(ItemVerificationQuestion::class);
     }
 
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
+    public function verifiedBy()
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
 }

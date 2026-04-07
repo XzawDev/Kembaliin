@@ -88,4 +88,9 @@ class Claim extends Model
 
         return asset('storage/' . $this->proof_image);
     }
+
+    public function images()
+    {
+        return $this->hasMany(ItemImage::class);
+    }
 }

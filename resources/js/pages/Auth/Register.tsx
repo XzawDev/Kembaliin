@@ -4,6 +4,49 @@ import React, { useState } from 'react';
 export default function Register() {
     const [showInfo, setShowInfo] = useState(false);
 
+    // Data kelas dropdown
+    const kelasList = [
+        // X
+        'X DPIB',
+        'X RPL',
+        'X TKJ',
+        'X PSPT',
+        'X UPW',
+        'X TKKR',
+        'X TB',
+        'X DKV',
+        'X ANM',
+        'X KKBT',
+        'X KKKI',
+        'X KKKR',
+        // XI
+        'XI DPIB',
+        'XI RPL',
+        'XI TKJ',
+        'XI PSPT',
+        'XI UPW',
+        'XI TKKR',
+        'XI TB',
+        'XI DKV',
+        'XI ANM',
+        'XI KKBT',
+        'XI KKKI',
+        'XI KKKR',
+        // XII
+        'XII DPIB',
+        'XII RPL',
+        'XII TKJ',
+        'XII PSPT',
+        'XII UPW',
+        'XII TKKR',
+        'XII TB',
+        'XII DKV',
+        'XII ANM',
+        'XII KKBT',
+        'XII KKKI',
+        'XII KKKR',
+    ];
+
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         email: '',
@@ -24,27 +67,20 @@ export default function Register() {
 
             {/* CONTAINER UTAMA */}
             <div className="relative flex min-h-[650px] w-full max-w-[1100px] flex-col overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-[0_20px_50px_-20px_rgba(0,0,0,0.15)] md:flex-row">
-                {}
+                {/* Left side (info) */}
                 <div className="relative order-2 hidden w-1/2 overflow-hidden bg-teal-900 md:order-1 md:block">
-                    {}
                     <img
                         src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=1000&auto=format&fit=crop"
                         alt="School Library"
                         className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 ${showInfo ? 'scale-125 blur-md brightness-50' : 'brightness-90 hover:scale-105'}`}
                     />
-
-                    {}
                     <div className="absolute inset-0 bg-teal-900/30 mix-blend-multiply"></div>
-
-                    {}
                     <div className={`absolute top-10 right-10 left-10 transition-opacity duration-500 ${showInfo ? 'opacity-0' : 'opacity-100'}`}>
                         <p className="mb-2 text-xs font-bold tracking-widest text-teal-50/80 uppercase">Bergabunglah Bersama Kami</p>
                         <h2 className="text-4xl leading-tight font-extrabold text-white">
                             Jadilah Siswa yang <br /> Jujur & Peduli.
                         </h2>
                     </div>
-
-                    {}
                     <div
                         className={`absolute inset-0 flex transform flex-col items-center justify-center bg-teal-900/80 p-12 text-center backdrop-blur-md transition-all duration-500 ${showInfo ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-8 opacity-0'}`}
                     >
@@ -77,12 +113,10 @@ export default function Register() {
                     </div>
                 </div>
 
-                {}
+                {/* Right side (form) */}
                 <div className="relative z-10 order-1 flex w-full flex-col justify-center overflow-y-auto bg-white p-8 sm:p-12 md:order-2 md:w-1/2">
-                    {}
                     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] opacity-50"></div>
 
-                    {}
                     <Link
                         href="/login"
                         className="group relative z-10 mb-6 inline-flex w-max items-center rounded-full bg-slate-100 px-4 py-2 text-xs font-bold text-slate-600 transition-all hover:bg-teal-50 hover:text-teal-700"
@@ -101,14 +135,12 @@ export default function Register() {
                     </Link>
 
                     <div className="relative z-10">
-                        {}
                         <div className="mb-8">
                             <span className="text-xs font-bold tracking-wider text-teal-600 uppercase">Registrasi Siswa</span>
                             <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-slate-900">Buat Akun Baru</h1>
                         </div>
 
                         <form onSubmit={submit} className="space-y-4">
-                            {}
                             <div>
                                 <label className="mb-1.5 ml-1 block text-[11px] font-bold tracking-wider text-slate-400 uppercase">
                                     Nama Lengkap
@@ -124,7 +156,6 @@ export default function Register() {
                                 {errors.name && <p className="mt-1 text-xs font-medium text-red-500">{errors.name}</p>}
                             </div>
 
-                            {}
                             <div>
                                 <label className="mb-1.5 ml-1 block text-[11px] font-bold tracking-wider text-slate-400 uppercase">
                                     Email Sekolah / Pribadi
@@ -140,7 +171,6 @@ export default function Register() {
                                 {errors.email && <p className="mt-1 text-xs font-medium text-red-500">{errors.email}</p>}
                             </div>
 
-                            {}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="mb-1.5 ml-1 block text-[11px] font-bold tracking-wider text-slate-400 uppercase">
@@ -157,18 +187,24 @@ export default function Register() {
                                 </div>
                                 <div>
                                     <label className="mb-1.5 ml-1 block text-[11px] font-bold tracking-wider text-slate-400 uppercase">Kelas</label>
-                                    <input
-                                        type="text"
+                                    <select
                                         value={data.kelas}
                                         onChange={(e) => setData('kelas', e.target.value)}
-                                        className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 placeholder-slate-400 transition-all outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/10"
-                                        placeholder="X RPL 1"
+                                        className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 transition-all outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/10"
                                         required
-                                    />
+                                    >
+                                        <option value="" disabled>
+                                            Pilih Kelas
+                                        </option>
+                                        {kelasList.map((kelas) => (
+                                            <option key={kelas} value={kelas}>
+                                                {kelas}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
 
-                            {}
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
                                     <label className="mb-1.5 ml-1 block text-[11px] font-bold tracking-wider text-slate-400 uppercase">
@@ -198,7 +234,6 @@ export default function Register() {
                                 </div>
                             </div>
 
-                            {}
                             {(errors.password || errors.no_hp || errors.kelas) && (
                                 <p className="rounded-lg bg-red-50 p-2 text-center text-xs font-medium text-red-500">
                                     Cek kembali data yang merah ya!
@@ -232,7 +267,7 @@ export default function Register() {
                     </div>
                 </div>
 
-                {}
+                {/* Info toggle button */}
                 <button
                     onClick={() => setShowInfo(!showInfo)}
                     className={`group absolute top-1/2 left-1/2 z-20 hidden h-14 w-14 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-4 border-white bg-amber-400 shadow-xl transition-all duration-300 hover:scale-110 md:flex ${showInfo ? 'rotate-180 bg-rose-500 text-white' : 'text-amber-900'}`}

@@ -24,6 +24,7 @@ interface Category {
 
 interface Item {
     id: number;
+    slug: string;
     name: string;
     description: string | null;
     location: string;
@@ -165,7 +166,7 @@ export default function Search({ items, filters, categories }: Props) {
                                     {items.data.map((item) => (
                                         <Link
                                             key={item.id}
-                                            href={`/items/${item.id}`}
+                                            href={`/items/${item.slug}`}
                                             className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-300 hover:shadow-lg md:rounded-3xl"
                                         >
                                             {/* GAMBAR */}
@@ -185,7 +186,7 @@ export default function Search({ items, filters, categories }: Props) {
                                                 {/* 1. Status */}
                                                 <div className="mb-0.5 md:mb-1">
                                                     <span
-                                                        className={`text-[10px] leading-none font-extrabold tracking-widest uppercase md:text-xs ${
+                                                        className={`md:text-md text-[10px] leading-none font-extrabold tracking-widest uppercase ${
                                                             item.display_status === 'hilang' ? 'text-red-500' : 'text-emerald-500'
                                                         }`}
                                                     >
