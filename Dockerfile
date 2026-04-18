@@ -1,6 +1,6 @@
 FROM php:8.2-fpm-alpine
 
-# Instal dependensi sistem dan Node.js/NPM untuk build Vite
+# Instal dependensi sistem dan Node.js/NPM
 RUN apk add --no-cache \
     git \
     curl \
@@ -12,28 +12,31 @@ RUN apk add --no-cache \
     nodejs \
     npm
 
-# Instal ekstensi PHP yang diperlukan Laravel
+# Instal ekstensi PHP
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-# Ambil Composer terbaru
+# Ambil Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set folder kerja
 WORKDIR /var/www
 
 # Copy file project
 COPY . /var/www
 
-# 1. Instal dependensi PHP (Composer)
+# 1. Instal dependensi PHP
 RUN composer install --no-interaction --optimize-autoloader --no-dev
 
-# 2. Instal dependensi JS dan Build Aset Vite
-# Perintah ini akan menghasilkan folder public/build/manifest.json
+# 2. Instal dependensi JS dan Build Vite
 RUN npm install && npm run build
 
-# Atur izin folder agar bisa diakses oleh web server
+# 3. Hapus node_modules setelah build (Biar Image Ringan)
+RUN rm -rf node_modules
+
+# Atur izin folder
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# Jalankan server di port 8080 (sesuai rencana sebelumnya)
-EXPOSE 8080
-CMD php artisan serve --host=0.0.0.0 --port=8080
+# Gunakan port 9000 untuk PHP-FPM
+EXPOSE 9000
+
+# Jalankan PHP-FPM
+CMD ["php-fpm"]
