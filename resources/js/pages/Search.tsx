@@ -15,6 +15,8 @@ import {
     Instagram,
     Twitter,
     Facebook,
+    AlertCircle,
+    Package,
 } from 'lucide-react';
 
 interface Category {
@@ -170,48 +172,49 @@ export default function Search({ items, filters, categories }: Props) {
                                             className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-300 hover:shadow-lg md:rounded-3xl"
                                         >
                                             {/* GAMBAR */}
-                                            <div className="relative aspect-square overflow-hidden">
-                                                <img
-                                                    src={
-                                                        item.image_url ||
-                                                        'https://images.unsplash.com/photo-1544006659-f0b21f04cb1b?q=80&w=800&auto=format&fit=crop'
-                                                    }
-                                                    alt={item.name}
-                                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                                />
+                                            <div className="relative aspect-square overflow-hidden bg-slate-100">
+                                                {item.image_url ? (
+                                                    <img
+                                                        src={item.image_url}
+                                                        alt={item.name}
+                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-full w-full flex-col items-center justify-center text-slate-400 transition-transform duration-500 group-hover:scale-110">
+                                                        {item.display_status === 'hilang' ? (
+                                                            <AlertCircle size={28} className="md:size-8" />
+                                                        ) : (
+                                                            <Package size={28} className="md:size-8" />
+                                                        )}
+                                                        <span className="mt-2 text-[10px] font-medium md:text-[11px]">Tidak ada foto</span>
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            {/* KONTEN */}
+                                            {/* KONTEN (sama seperti sebelumnya) */}
                                             <div className="p-3 pt-2 md:p-5 md:pt-3">
-                                                {/* 1. Status */}
+                                                {/* status badge */}
                                                 <div className="mb-0.5 md:mb-1">
                                                     <span
-                                                        className={`md:text-md text-[10px] leading-none font-extrabold tracking-widest uppercase ${
+                                                        className={`text-[10px] leading-none font-extrabold tracking-widest uppercase ${
                                                             item.display_status === 'hilang' ? 'text-red-500' : 'text-emerald-500'
                                                         }`}
                                                     >
                                                         • {item.display_status === 'hilang' ? 'HILANG' : 'DITEMUKAN'}
                                                     </span>
                                                 </div>
-
-                                                {/* 2. Judul Barang */}
+                                                {/* judul */}
                                                 <h3 className="mb-2 line-clamp-1 text-sm font-bold text-slate-900 md:mb-3 md:text-lg">{item.name}</h3>
-
-                                                {/* 3. Meta Detail */}
+                                                {/* meta detail */}
                                                 <div className="mb-3 space-y-1 md:mb-4 md:space-y-1.5">
-                                                    {/* Kategori */}
                                                     <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-500 md:text-xs">
                                                         <Tag size={12} className="shrink-0 text-slate-400 md:h-3.5 md:w-3.5" />
                                                         <span className="truncate">{item.category.name}</span>
                                                     </div>
-
-                                                    {/* Lokasi */}
                                                     <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-500 md:text-xs">
                                                         <MapPin size={12} className="shrink-0 text-slate-400 md:h-3.5 md:w-3.5" />
                                                         <span className="truncate">{item.location}</span>
                                                     </div>
-
-                                                    {/* Tanggal */}
                                                     <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-500 md:text-xs">
                                                         <Calendar size={12} className="shrink-0 text-slate-400 md:h-3.5 md:w-3.5" />
                                                         <span className="truncate">
@@ -219,8 +222,7 @@ export default function Search({ items, filters, categories }: Props) {
                                                         </span>
                                                     </div>
                                                 </div>
-
-                                                {/* CTA Detail - Diubah menjadi <div> agar valid di dalam <Link> */}
+                                                {/* tombol detail */}
                                                 <div className="flex w-full items-center justify-center gap-1 rounded-xl bg-slate-50 py-2.5 text-[10px] font-bold text-slate-800 transition-all group-hover:bg-indigo-600 group-hover:text-white md:rounded-2xl md:py-3 md:text-xs">
                                                     Detail <ChevronRight size={12} className="md:h-4 md:w-4" />
                                                 </div>

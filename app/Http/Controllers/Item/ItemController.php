@@ -14,6 +14,7 @@ use App\Enums\ReportType;
 use App\Enums\ReportStatus;
 use App\Models\ItemHistory;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Claim;
 
 class ItemController extends Controller
 {
@@ -96,7 +97,7 @@ class ItemController extends Controller
                 'questions_saved' => $savedCount,
             ]);
 
-            return redirect()->route('items.qr', $item->id)->with('success', 'Barang ditemukan berhasil dilaporkan. Tunjukkan QR code ke petugas.');
+            return redirect()->route('items.qr', $item->slug)->with('success', 'Barang ditemukan berhasil dilaporkan. Tunjukkan QR code ke petugas.');
         }
 
         // Laporan barang hilang
@@ -111,32 +112,42 @@ class ItemController extends Controller
     }
 
     public function show($slug)
-{
-    $item = Item::where('slug', $slug)->firstOrFail();
-    
-    // Load relasi yang diperlukan
-    $item->load(['user', 'category', 'images', 'histories.user', 'user:id,name,no_hp,kelas']);
+    {
+        $item = Item::where('slug', $slug)->firstOrFail();
 
-    if ($item->trashed()) {
-        abort(404);
+        // Load relasi yang diperlukan
+        $item->load(['user', 'category', 'images', 'histories.user', 'user:id,name,no_hp,kelas']);
+
+        if ($item->trashed()) {
+            abort(404);
+        }
+
+        // Hitung display_status untuk frontend
+        if ($item->report_type === ReportType::HILANG) {
+            $item->display_status = 'hilang';
+        } else {
+            $item->display_status = $item->handling_status ?? 'menunggu_penyerahan';
+        }
+
+        // Transformasi gambar
+        $item->images->transform(function ($image) {
+            $image->url = asset('storage/' . $image->image_path);
+            return $image;
+        });
+
+        $hasPendingClaim = false;
+        $hasApprovedClaim = false;
+        if (Auth::check()) {
+            $userId = Auth::id();
+            $hasPendingClaim = Claim::where('item_id', $item->id)->where('user_id', $userId)->where('status', Claim::STATUS_PENDING)->exists();
+            $hasApprovedClaim = Claim::where('item_id', $item->id)->where('user_id', $userId)->where('status', Claim::STATUS_APPROVED)->exists();
+        }
+        $item->has_pending_claim = $hasPendingClaim;
+        $item->has_approved_claim = $hasApprovedClaim;
+
+        // Gunakan nama komponen yang sesuai dengan file React Anda (ItemDetail)
+        return inertia('ItemDetail', ['item' => $item]);
     }
-
-    // Hitung display_status untuk frontend
-    if ($item->report_type === ReportType::HILANG) {
-        $item->display_status = 'hilang';
-    } else {
-        $item->display_status = $item->handling_status ?? 'menunggu_penyerahan';
-    }
-
-    // Transformasi gambar
-    $item->images->transform(function ($image) {
-        $image->url = asset('storage/' . $image->image_path);
-        return $image;
-    });
-
-    // Gunakan nama komponen yang sesuai dengan file React Anda (ItemDetail)
-    return inertia('ItemDetail', ['item' => $item]);
-}
 
     /**
      * Halaman detail item khusus untuk pemilik (dengan kontrol edit/hapus)

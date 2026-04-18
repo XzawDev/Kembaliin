@@ -13,14 +13,14 @@ class SearchController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Item::with(['category', 'images']);
+        $query = Item::with(['category', 'images'])
+            ->whereNull('deleted_at'); // tambahkan filter soft delete
 
         // Keyword search (name or description)
         if ($request->filled('keyword')) {
             $keyword = $request->keyword;
             $query->where(function ($q) use ($keyword) {
                 $q->where('name', 'like', "%{$keyword}%")
-                  ->whereNull('deleted_at')
                   ->orWhere('description', 'like', "%{$keyword}%");
             });
         }
@@ -50,17 +50,16 @@ class SearchController extends Controller
 
         $items = $query->latest()->paginate(12)->withQueryString();
 
-        // Add display fields for frontend
-       $items->getCollection()->transform(function ($item) {
-            // Correct enum comparison
+        $items->getCollection()->transform(function ($item) {
             if ($item->report_type === ReportType::HILANG) {
                 $item->display_status = 'hilang';
             } else {
                 $item->display_status = $item->handling_status ?? 'menunggu_penyerahan';
             }
+            // Set image_url ke null jika tidak ada gambar (tidak pakai placeholder)
             $item->image_url = $item->images->first()?->image_path
                 ? asset('storage/' . $item->images->first()->image_path)
-                : 'https://images.unsplash.com/placeholder.jpg';
+                : null;
             return $item;
         });
 

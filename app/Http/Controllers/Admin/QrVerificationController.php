@@ -34,6 +34,6 @@ class QrVerificationController extends Controller
             'description' => "Item '{$item->name}' verified and handed over.",
         ]);
 
-        return redirect()->route('officer.items.show', $item->id)->with('success', 'Item verified and handed over.');
+        return redirect()->route('officer.items.show', $item->slug)->with('success', 'Item verified and handed over.');
     }
 }

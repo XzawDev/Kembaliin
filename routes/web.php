@@ -11,6 +11,8 @@ use App\Http\Controllers\Siswa\DashboardController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Item\ClaimController;
 use App\Http\Controllers\Item\QrController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Siswa\SettingsController;
 
 // Admin (officer) controllers
 use App\Http\Controllers\Admin\DashboardController as OfficerDashboardController;
@@ -25,27 +27,31 @@ use Illuminate\Http\Request;
 // Redirect root to home
 Route::get('/', fn() => redirect('/home'));
 
+// Guest routes
 Route::middleware(['guest', 'no-cache'])->group(function () {
     Route::get('/register', fn() => Inertia::render('Auth/Register'))->name('register');
     Route::post('/register', [RegisterController::class, 'storeRegister'])->name('register.store');
-
     Route::get('/login', fn() => Inertia::render('Auth/Login'))->name('login');
     Route::post('/login', [LoginController::class, 'storeLogin'])->name('login.store');
 });
 
-// Public routes (no login required)
+// Public routes
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/qr/{token}', [QrController::class, 'generateQr'])->name('qr.generate');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 
+// Redirect /items to search (to fix MethodNotAllowed error)
+Route::get('/items', fn() => redirect('/search'))->name('items.index');
+
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
-    // Siswa (student) routes
+
+    // Siswa routes
     Route::get('/Siswa/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/Siswa/laporan', [DashboardController::class, 'allReports'])->name('siswa.laporan');
 
-    // Item CRUD (student)
+    // Item CRUD (using slug via route model binding)
     Route::get('/items/create', [ItemController::class, 'create'])->name('items.create');
     Route::post('/items', [ItemController::class, 'store'])->name('items.store');
     Route::get('/items/{item}/qr', [QrController::class, 'showQr'])->name('items.qr');
@@ -53,28 +59,27 @@ Route::middleware(['auth'])->group(function () {
     Route::match(['put', 'patch'], '/items/{item}', [ItemController::class, 'update'])->name('items.update');
     Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
 
-    // Owner detail item
+    // Owner detail item (with edit/delete controls)
     Route::get('/siswa/items/{item}', [ItemController::class, 'showForOwner'])->name('siswa.items.show');
 
-    // Claim verification (API)
+    // Claim routes
     Route::get('/items/{item}/questions', [ClaimController::class, 'getQuestions'])->name('items.questions');
     Route::post('/items/{item}/verify-claim', [ClaimController::class, 'store'])->name('items.verify-claim');
-
-    // Claim form and processing
     Route::get('/claim/{item}', [ClaimController::class, 'create'])->name('claim.create');
     Route::post('/claim/{item}', [ClaimController::class, 'storeClaim'])->name('claim.store');
-
-    // Claim result pages
     Route::get('/claim/success/{item}', [ClaimController::class, 'success'])->name('claim.success');
     Route::get('/claim/failed/{item}', [ClaimController::class, 'failed'])->name('claim.failed');
     Route::get('/claim/error/{item}', [ClaimController::class, 'error'])->name('claim.error');
     Route::get('/claim/already/{item}', [ClaimController::class, 'already'])->name('claim.already');
-
+    Route::get('/claim/pending/{item}', [ClaimController::class, 'pending'])->name('claim.pending');
     Route::get('/siswa/pengajuan', [ClaimController::class, 'index'])->name('siswa.pengajuan');
-    // API untuk refresh data
     Route::get('/claim/success-data/{item}', [ClaimController::class, 'getClaimData'])->name('claim.data');
 
-    // Officer routes (role petugas)
+    // Halaman Pengaturan Akun
+    Route::get('/Siswa/pengaturan', [\App\Http\Controllers\Siswa\SettingsController::class, 'edit'])->name('siswa.settings');
+    Route::put('/Siswa/pengaturan', [\App\Http\Controllers\Siswa\SettingsController::class, 'update'])->name('siswa.settings.update');
+
+    // Officer routes
     Route::middleware(['auth', 'role:petugas'])
         ->prefix('officer')
         ->name('officer.')
@@ -93,33 +98,25 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/history', [HistoryController::class, 'history'])->name('history');
             Route::get('/verify', [QrVerificationController::class, 'verifyQrPage'])->name('verify');
             Route::post('/items/{item}/verify-handover', [QrVerificationController::class, 'verifyItemHandover'])->name('items.verify-handover');
+            Route::get('/claims', [ClaimController::class, 'allClaims'])->name('claims.index');
+            Route::get('/claims/{claim}', [ClaimController::class, 'showClaimDetail'])->name('claims.show');
+            Route::post('/claims/{claim}/verify', [ClaimController::class, 'verifyManual'])->name('claims.verify');
+            Route::post('/claims/{claim}/upload-proof', [ClaimController::class, 'uploadProofPhoto'])->name('claims.upload-proof');
         });
 });
 
-Route::get('/email/verify', function () {
-    return inertia('Auth/VerifyEmail');
-})
-    ->middleware('auth')
-    ->name('verification.notice');
-
-// Proses verifikasi manual (tanpa EmailVerificationRequest)
+// Email verification routes
+Route::get('/email/verify', fn() => inertia('Auth/VerifyEmail'))->middleware('auth')->name('verification.notice');
 Route::get('/email/verify/{id}/{hash}', function ($id, $hash) {
     $user = User::findOrFail($id);
-    // Verifikasi hash secara manual
-    if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
+    if (!hash_equals(sha1($user->getEmailForVerification()), $hash)) {
         abort(403, 'Link verifikasi tidak valid.');
     }
-    return inertia('Auth/VerifyEmailPage', [
-        'id' => $id,
-        'hash' => $hash,
-        'email' => $user->email,
-    ]);
+    return inertia('Auth/VerifyEmailPage', ['id' => $id, 'hash' => $hash, 'email' => $user->email]);
 })->name('verification.verify');
-
-// Proses verifikasi (POST)
 Route::post('/email/verify/{id}/{hash}', function ($id, $hash) {
     $user = User::findOrFail($id);
-    if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
+    if (!hash_equals(sha1($user->getEmailForVerification()), $hash)) {
         return response()->json(['message' => 'Link verifikasi tidak valid.'], 403);
     }
     if ($user->hasVerifiedEmail()) {
@@ -128,8 +125,6 @@ Route::post('/email/verify/{id}/{hash}', function ($id, $hash) {
     $user->markEmailAsVerified();
     return response()->json(['message' => 'Email berhasil diverifikasi!']);
 })->name('verification.verify.post');
-
-// Kirim ulang notifikasi
 Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
     return back()->with('success', 'Link verifikasi baru telah dikirim.');
@@ -137,5 +132,5 @@ Route::post('/email/verification-notification', function (Request $request) {
     ->middleware(['auth', 'throttle:6,1'])
     ->name('verification.send');
 
-// Public item detail – menggunakan route model binding (slug)
+// Public item detail – using slug, must be last to avoid conflicts
 Route::get('/items/{item}', [ItemController::class, 'show'])->name('items.show');

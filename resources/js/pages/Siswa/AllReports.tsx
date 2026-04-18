@@ -5,6 +5,7 @@ import { Trash2, Eye } from 'lucide-react';
 
 interface Report {
     id: number;
+    slug: string; // tambahkan slug
     name: string;
     category: { name: string };
     report_type: 'hilang' | 'ditemukan';
@@ -22,9 +23,9 @@ interface AllReportsProps {
 }
 
 export default function AllReports({ reports }: AllReportsProps) {
-    const handleDelete = (id: number, name: string) => {
+    const handleDelete = (slug: string, name: string) => {
         if (confirm(`Apakah Anda yakin ingin menghapus laporan "${name}"? Laporan akan disembunyikan dari publik dan dashboard Anda.`)) {
-            router.delete(`/items/${id}`);
+            router.delete(`/items/${slug}`);
         }
     };
 
@@ -74,14 +75,14 @@ export default function AllReports({ reports }: AllReportsProps) {
                                         <td className="px-4 py-3 text-right md:px-6 md:py-4">
                                             <div className="flex items-center justify-end gap-1">
                                                 <Link
-                                                    href={`/siswa/items/${report.id}`}
+                                                    href={`/siswa/items/${report.slug}`}
                                                     title="Lihat Detail"
                                                     className="rounded-lg p-2 text-indigo-500 transition-colors hover:bg-indigo-50 hover:text-indigo-700"
                                                 >
                                                     <Eye size={18} />
                                                 </Link>
                                                 <button
-                                                    onClick={() => handleDelete(report.id, report.name)}
+                                                    onClick={() => handleDelete(report.slug, report.name)}
                                                     title="Hapus Laporan"
                                                     className="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 hover:text-red-700"
                                                 >
@@ -118,10 +119,9 @@ export default function AllReports({ reports }: AllReportsProps) {
     );
 }
 
-// Helper Component untuk Status Laporan (Diselaraskan dengan gaya Dashboard)
+// Helper Component untuk Status Laporan
 function ReportStatusBadge({ type }: { type: 'hilang' | 'ditemukan' }) {
     const isHilang = type === 'hilang';
-
     return (
         <span
             className={`rounded-full border px-2 py-0.5 text-[9px] font-extrabold tracking-wider uppercase md:px-2.5 md:py-1 md:text-[10px] ${

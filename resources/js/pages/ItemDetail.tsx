@@ -28,7 +28,7 @@ interface Item {
     handling_status: 'menunggu_penyerahan' | 'dititipkan_petugas' | 'diklaim' | 'dikembalikan' | null;
     display_status: string;
     qr_code: string | null;
-    user: { id: number; name: string; class?: string; phone?: string; avatar_url?: string };
+    user: { id: number; name: string; class?: string; no_hp?: string; avatar_url?: string };
     category: { id: number; name: string };
     images: Array<{ id: number; url: string }>;
     histories: Array<{
@@ -38,6 +38,8 @@ interface Item {
         created_at: string;
         user: { id: number; name: string } | null;
     }>;
+    has_pending_claim?: boolean;
+    has_approved_claim?: boolean;
 }
 
 interface Props {
@@ -79,7 +81,7 @@ export default function ItemDetail({ item }: Props) {
         dikembalikan: 'Sudah Dikembalikan ke Pemilik',
     };
     const handlingStatusDisplay = item.handling_status ? handlingStatusMap[item.handling_status] : '-';
-    const finalHandlingDisplay = isLost ? 'Tidak Berlaku (Barang Hilang)' : handlingStatusDisplay;
+    const finalHandlingDisplay = isLost ? '-' : handlingStatusDisplay;
 
     const handleDelete = () => {
         if (confirm('Hapus laporan ini? Laporan akan disembunyikan dari publik.')) {
@@ -91,26 +93,70 @@ export default function ItemDetail({ item }: Props) {
     let claimLink = '';
     let claimText = 'Klaim Barang';
     if (!user) {
-        // Belum login: arahkan ke halaman login dengan redirect kembali ke halaman ini
         const redirectUrl = encodeURIComponent(window.location.pathname);
         claimLink = `/login?redirect=${redirectUrl}`;
         claimText = 'Klaim Barang';
-    } else if (user.id !== item.user.id) {
-        // Sudah login dan bukan pemilik
+    } else if (user.id === item.user.id) {
+        claimLink = '';
+    } else if (item.has_approved_claim) {
+        claimLink = `/claim/success/${item.slug}`;
+        claimText = 'Lihat Klaim Saya';
+    } else if (item.has_pending_claim) {
+        claimLink = `/claim/pending/${item.slug}`;
+        claimText = 'Klaim Sedang Diproses';
+    } else {
         claimLink = `/claim/${item.slug}`;
         claimText = 'Klaim Barang';
     }
-    // Jika user adalah pemilik, claimLink tetap kosong (tombol tidak ditampilkan)
 
-    const showClaimButton =
-        !isLost && item.report_status !== 'ditutup' && item.handling_status !== 'dikembalikan' && item.handling_status !== 'diklaim' && claimLink;
+    const showClaimButton = !isLost && item.report_status !== 'ditutup' && item.handling_status !== 'dikembalikan' && claimLink;
+
+    // Tombol "Hubungi Pelapor" hanya untuk barang hilang, dan hanya jika user sudah login
+    const renderContactButton = () => {
+        if (!isLost) return null;
+        if (!user) {
+            const redirectUrl = encodeURIComponent(window.location.pathname);
+            return (
+                <Link
+                    href={`/login?redirect=${redirectUrl}`}
+                    className="group flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-[0.98]"
+                >
+                    <MessageCircle size={18} className="transition-transform group-hover:scale-105" />
+                    Login untuk Hubungi Pelapor
+                </Link>
+            );
+        }
+        if (!item.user.no_hp) {
+            return (
+                <button
+                    disabled
+                    className="group flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-slate-300 px-4 py-3 font-semibold text-white"
+                    title="Nomor telepon pelapor tidak tersedia"
+                >
+                    <MessageCircle size={18} />
+                    Hubungi Pelapor (No HP tidak tersedia)
+                </button>
+            );
+        }
+        return (
+            <a
+                href={`https://wa.me/${item.user.no_hp.replace(/^0/, '62')}?text=${encodeURIComponent(
+                    `Halo, saya melihat barang yang Anda laporkan hilang: ${item.name}. Mohon info lebih lanjut. Terima kasih.`,
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-[0.98]"
+            >
+                <MessageCircle size={18} className="transition-transform group-hover:scale-105" />
+                Hubungi Pelapor
+            </a>
+        );
+    };
 
     const goBack = useCallback(() => {
-        // Cek apakah ada riwayat sebelumnya (setidaknya satu halaman sebelum ini)
         if (window.history.length > 1) {
             window.history.back();
         } else {
-            // Fallback ke halaman pencarian jika tidak ada riwayat
             router.get('/search');
         }
     }, []);
@@ -194,9 +240,7 @@ export default function ItemDetail({ item }: Props) {
                                 {/* Info Card */}
                                 <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/70 sm:p-8">
                                     <div className="space-y-6">
-                                        {/* Kategori */}
                                         <DetailItem icon={<Tag size={18} />} label="Kategori" value={item.category.name} />
-                                        {/* Status Laporan */}
                                         <DetailItem
                                             icon={<Flag size={18} />}
                                             label="Status Laporan"
@@ -218,33 +262,27 @@ export default function ItemDetail({ item }: Props) {
 
                                     {/* Reporter Info */}
                                     <div className="flex items-start gap-4">
-                                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 text-lg font-bold text-indigo-700">
-                                            {item.user.name.charAt(0)}
-                                        </div>
+                                        {auth.user.foto ? (
+                                            <img
+                                                src={`/storage/${auth.user.foto}`}
+                                                alt={auth.user.name}
+                                                className="h-10 w-10 rounded-full object-cover shadow-lg shadow-teal-50"
+                                            />
+                                        ) : (
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-600 font-black text-white shadow-lg shadow-teal-50">
+                                                {auth.user.name.charAt(0)}
+                                            </div>
+                                        )}
                                         <div className="flex-1">
                                             <p className="text-xs font-medium tracking-wider text-slate-400 uppercase">Pelapor</p>
                                             <p className="font-semibold text-slate-900">{item.user.name}</p>
                                             {item.user.class && <p className="mt-0.5 text-sm text-slate-500">Kelas: {item.user.class}</p>}
-                                            {item.user.phone && (
-                                                <div className="mt-2 flex items-center gap-1.5 text-sm text-slate-500">
-                                                    <Phone size={14} />
-                                                    <span>{item.user.phone}</span>
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
 
                                     {/* Action Buttons */}
                                     <div className="mt-6 space-y-3">
-                                        {/* Tombol Hubungi Pelapor hanya untuk barang hilang */}
-                                        {isLost && (
-                                            <button className="group flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-[0.98]">
-                                                <MessageCircle size={18} className="transition-transform group-hover:scale-105" />
-                                                Hubungi Pelapor
-                                            </button>
-                                        )}
-
-                                        {/* Tombol Klaim Barang untuk barang ditemukan */}
+                                        {renderContactButton()}
                                         {showClaimButton && (
                                             <Link
                                                 href={claimLink}
@@ -253,8 +291,6 @@ export default function ItemDetail({ item }: Props) {
                                                 <CheckCircle2 size={20} /> {claimText}
                                             </Link>
                                         )}
-
-                                        {/* Tombol Edit/Hapus untuk pemilik */}
                                         {isOwner && (
                                             <div className="flex gap-3 pt-2">
                                                 <Link

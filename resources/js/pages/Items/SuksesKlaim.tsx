@@ -7,7 +7,7 @@ import { CheckCircle2, ArrowLeft, User, MessageCircle, Phone, School, PackageChe
 interface OfficerContact {
     name: string;
     phone: string;
-    wa_link: string;
+    wa_link?: string;
 }
 
 interface Props {
@@ -54,6 +54,14 @@ export default function SuksesKlaim({ item, message: initialMessage, contact: in
     const formatWA = (phone: string) => {
         const cleaned = phone.replace(/\D/g, '');
         return cleaned.startsWith('0') ? `62${cleaned.slice(1)}` : cleaned;
+    };
+
+    // Fungsi untuk membuat link WhatsApp dengan pesan otomatis
+    const getWhatsAppLink = () => {
+        if (!officerContact?.phone) return '#';
+        const phone = formatWA(officerContact.phone);
+        const message = `Halo, saya ${contact?.name || 'pengklaim'} ingin menanyakan status klaim barang "${item.name}". Terima kasih.`;
+        return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     };
 
     if (loading) {
@@ -150,13 +158,13 @@ export default function SuksesKlaim({ item, message: initialMessage, contact: in
                                 </h3>
                                 <div className="grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-3">
                                     <a
-                                        href={officerContact?.wa_link || '#'}
+                                        href={getWhatsAppLink()}
                                         target="_blank"
                                         rel="noreferrer"
                                         className="flex items-center justify-center gap-2 rounded-xl bg-indigo-50 px-4 py-2.5 text-xs font-semibold text-indigo-700 transition-all hover:bg-indigo-100 active:scale-95 md:py-3.5 md:text-sm"
                                     >
                                         <MessageCircle className="h-4 w-4" />
-                                        Chat {officerContact?.name || 'Petugas'}
+                                        Hubungi Petugas
                                     </a>
 
                                     <a

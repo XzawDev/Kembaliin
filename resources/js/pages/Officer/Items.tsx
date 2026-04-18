@@ -7,6 +7,7 @@ interface Item {
     id: number;
     name: string;
     report_type: string;
+    slug: string;
     report_status: 'aktif' | 'selesai' | 'ditutup'; // tambahkan
     handling_status: string | null;
     user: { name: string };
@@ -204,7 +205,7 @@ export default function OfficerItems({ items, filters }: Props) {
                                             </td>
                                             <td className="px-4 py-4 text-right sm:px-6">
                                                 <Link
-                                                    href={`/officer/items/${item.id}`}
+                                                    href={`/officer/items/${item.slug}`}
                                                     className="inline-flex h-8 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-bold text-slate-600 shadow-sm transition-all hover:border-indigo-600 hover:text-indigo-600 sm:h-9 sm:px-4 sm:text-xs"
                                                 >
                                                     View
