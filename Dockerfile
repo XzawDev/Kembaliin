@@ -35,8 +35,8 @@ RUN rm -rf node_modules
 # Atur izin folder
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# Gunakan port 9000 untuk PHP-FPM
-EXPOSE 9000
+# Ubah EXPOSE
+EXPOSE 8080
 
-# Jalankan PHP-FPM
-CMD ["php-fpm"]
+# Ubah perintah jalan (CMD)
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
