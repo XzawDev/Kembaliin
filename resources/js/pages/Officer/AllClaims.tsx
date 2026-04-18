@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import OfficerLayout from '@/layouts/OfficerLayout';
+import { Search, Filter, ChevronRight, Clock, CheckCircle2, XCircle, AlertCircle, User as UserIcon, Calendar } from 'lucide-react';
 
 interface Claim {
     id: number;
@@ -30,98 +31,172 @@ interface Props {
 }
 
 export default function AllClaims({ claims, currentStatus }: Props) {
-    const [statusFilter, setStatusFilter] = useState(currentStatus);
+    const [statusFilter, setStatusFilter] = useState(currentStatus || 'all');
 
     const handleFilterChange = (status: string) => {
         setStatusFilter(status);
-        router.get('/officer/claims', { status: status !== 'all' ? status : '' }, { preserveState: true });
+        router.get('/officer/claims', { status: status !== 'all' ? status : '' }, { preserveState: true, preserveScroll: true });
     };
 
-    const getStatusBadge = (status: string) => {
+    const getStatusStyle = (status: string) => {
         switch (status) {
             case 'pending':
-                return <span className="rounded-full bg-yellow-100 px-2 py-1 text-xs text-yellow-800">Pending</span>;
+                return {
+                    bg: 'bg-amber-50',
+                    text: 'text-amber-700',
+                    border: 'border-amber-200',
+                    icon: <Clock size={14} />,
+                };
             case 'approved':
-                return <span className="rounded-full bg-green-100 px-2 py-1 text-xs text-green-800">Disetujui</span>;
+                return {
+                    bg: 'bg-emerald-50',
+                    text: 'text-emerald-700',
+                    border: 'border-emerald-200',
+                    icon: <CheckCircle2 size={14} />,
+                };
             case 'rejected':
-                return <span className="rounded-full bg-red-100 px-2 py-1 text-xs text-red-800">Ditolak</span>;
+                return {
+                    bg: 'bg-rose-50',
+                    text: 'text-rose-700',
+                    border: 'border-rose-200',
+                    icon: <XCircle size={14} />,
+                };
             default:
-                return null;
+                return { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200', icon: null };
         }
     };
 
     return (
         <OfficerLayout>
-            <Head title="Semua Klaim" />
-            <div className="mx-auto max-w-7xl px-4 py-8">
-                <div className="mb-6 flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Semua Klaim</h1>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => handleFilterChange('all')}
-                            className={`rounded px-3 py-1 ${statusFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
-                        >
-                            Semua
-                        </button>
-                        <button
-                            onClick={() => handleFilterChange('pending')}
-                            className={`rounded px-3 py-1 ${statusFilter === 'pending' ? 'bg-yellow-600 text-white' : 'bg-gray-200'}`}
-                        >
-                            Pending
-                        </button>
-                        <button
-                            onClick={() => handleFilterChange('approved')}
-                            className={`rounded px-3 py-1 ${statusFilter === 'approved' ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
-                        >
-                            Disetujui
-                        </button>
-                        <button
-                            onClick={() => handleFilterChange('rejected')}
-                            className={`rounded px-3 py-1 ${statusFilter === 'rejected' ? 'bg-red-600 text-white' : 'bg-gray-200'}`}
-                        >
-                            Ditolak
-                        </button>
+            <Head title="Verifikasi Klaim - Panel Petugas" />
+
+            <div className="mx-auto max-w-6xl space-y-6">
+                {/* Header & Filter Section */}
+                <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">Verifikasi Klaim</h1>
+                        <p className="mt-1 text-sm font-medium text-slate-500">Kelola dan verifikasi permintaan klaim barang dari siswa.</p>
+                    </div>
+
+                    {/* Filter Pills - Scrollable on mobile */}
+                    <div className="no-scrollbar flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
+                        <Filter size={18} className="mr-1 shrink-0 text-slate-400" />
+                        {[
+                            { id: 'all', label: 'Semua', color: 'teal' },
+                            { id: 'pending', label: 'Pending', color: 'amber' },
+                            { id: 'approved', label: 'Disetujui', color: 'emerald' },
+                            { id: 'rejected', label: 'Ditolak', color: 'rose' },
+                        ].map((btn) => (
+                            <button
+                                key={btn.id}
+                                onClick={() => handleFilterChange(btn.id)}
+                                className={`rounded-full px-5 py-2 text-xs font-bold whitespace-nowrap transition-all active:scale-95 ${
+                                    statusFilter === btn.id
+                                        ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20'
+                                        : 'border border-slate-200 bg-white text-slate-500 hover:border-teal-600 hover:text-teal-600'
+                                }`}
+                            >
+                                {btn.label}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-lg bg-white shadow">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Barang</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pengklaim</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal Klaim</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                            {claims.data.map((claim) => (
-                                <tr key={claim.id}>
-                                    <td className="px-6 py-4">{claim.item.name}</td>
-                                    <td className="px-6 py-4">{claim.user.name}</td>
-                                    <td className="px-6 py-4">{getStatusBadge(claim.status)}</td>
-                                    <td className="px-6 py-4">{new Date(claim.created_at).toLocaleDateString()}</td>
-                                    <td className="px-6 py-4">
-                                        <Link href={`/officer/claims/${claim.id}`} className="text-indigo-600 hover:underline">
-                                            Detail
-                                        </Link>
-                                    </td>
+                {/* Table Container */}
+                <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm shadow-slate-200/50">
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-collapse text-left">
+                            <thead>
+                                <tr className="border-b border-slate-100 bg-slate-50/50">
+                                    <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-slate-400 uppercase">Informasi Barang</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-slate-400 uppercase">Pengklaim</th>
+                                    <th className="px-6 py-4 text-[11px] font-bold tracking-wider text-slate-400 uppercase">Status</th>
+                                    <th className="px-6 py-4 text-right text-[11px] font-bold tracking-wider text-slate-400 uppercase">Aksi</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {claims.data.length > 0 ? (
+                                    claims.data.map((claim) => {
+                                        const style = getStatusStyle(claim.status);
+                                        return (
+                                            <tr key={claim.id} className="group transition-colors hover:bg-slate-50/50">
+                                                <td className="px-6 py-5">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-bold text-slate-800 transition-colors group-hover:text-teal-700">
+                                                            {claim.item.name}
+                                                        </span>
+                                                        <div className="mt-1 flex items-center gap-1.5 text-[11px] text-slate-400">
+                                                            <Calendar size={12} />
+                                                            {new Date(claim.created_at).toLocaleDateString('id-ID', {
+                                                                day: 'numeric',
+                                                                month: 'short',
+                                                                year: 'numeric',
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-5">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                                                            <UserIcon size={14} />
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-semibold text-slate-700">{claim.user.name}</span>
+                                                            <span className="text-[11px] text-slate-400">{claim.user.email}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-5">
+                                                    <div
+                                                        className={`inline-flex items-center gap-1.5 rounded-full border ${style.bg} ${style.text} ${style.border} px-3 py-1 text-[10px] font-bold uppercase`}
+                                                    >
+                                                        {style.icon}
+                                                        {claim.status === 'pending'
+                                                            ? 'Menunggu'
+                                                            : claim.status === 'approved'
+                                                              ? 'Disetujui'
+                                                              : 'Ditolak'}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-5 text-right">
+                                                    <Link
+                                                        href={`/officer/claims/${claim.id}`}
+                                                        className="inline-flex items-center gap-1 rounded-xl bg-teal-50 px-4 py-2 text-xs font-bold text-teal-700 transition-all hover:bg-teal-600 hover:text-white"
+                                                    >
+                                                        Detail
+                                                        <ChevronRight size={14} />
+                                                    </Link>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                ) : (
+                                    <tr>
+                                        <td colSpan={4} className="px-6 py-20 text-center">
+                                            <div className="flex flex-col items-center justify-center text-slate-400">
+                                                <AlertCircle size={40} className="mb-3 opacity-20" />
+                                                <p className="text-sm font-medium">Tidak ada klaim yang ditemukan.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                {claims.links && claims.links.length > 0 && (
-                    <div className="mt-4 flex justify-center space-x-2">
+                {/* Modern Pagination */}
+                {claims.links && claims.links.length > 3 && (
+                    <div className="flex items-center justify-center gap-2 pt-4">
                         {claims.links.map((link, i) => (
                             <Link
                                 key={i}
                                 href={link.url || '#'}
-                                className={`rounded px-3 py-1 ${
-                                    link.active ? 'bg-indigo-600 text-white' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                                }`}
+                                className={`flex h-9 min-w-[36px] items-center justify-center rounded-xl px-3 text-xs font-bold transition-all ${
+                                    link.active
+                                        ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20'
+                                        : 'border border-slate-200 bg-white text-slate-500 hover:border-teal-600 hover:text-teal-600'
+                                } ${!link.url ? 'cursor-not-allowed opacity-50' : 'active:scale-95'}`}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                             />
                         ))}

@@ -300,52 +300,43 @@ export default function Search({ items, filters, categories }: Props) {
             {/* Footer */}
             <footer className="bg-slate-900 pt-16 pb-8 text-white md:pt-20 md:pb-10">
                 <div className="mx-auto max-w-7xl px-4 lg:px-8">
-                    <div className="mb-12 grid grid-cols-2 gap-8 md:mb-16 md:grid-cols-4 md:gap-12">
+                    {/* Grid updated to 3 columns on desktop */}
+                    <div className="mb-12 grid grid-cols-2 gap-8 md:mb-16 md:grid-cols-3 md:gap-12">
+                        {/* 1. Branding Section */}
                         <div className="col-span-2 md:col-span-1">
                             <div className="mb-4 flex items-center gap-2 text-xl font-bold text-white md:mb-6 md:text-2xl">
                                 <img src="/logo.png" alt="Kembaliin Logo" className="h-5 w-auto brightness-0 invert md:h-6" />
                             </div>
                             <p className="max-w-xs text-xs leading-relaxed text-slate-400 md:text-sm">
-                                Platform komunitas sekolah untuk membantu sesama menemukan barang yang hilang dengan aman.
+                                Platform komunitas sekolah untuk membantu sesama menemukan barang yang hilang dengan aman dan terverifikasi.
                             </p>
                         </div>
+
+                        {/* 2. Tautan Section */}
                         <div>
-                            <h4 className="mb-4 text-[10px] font-bold tracking-widest text-slate-500 uppercase md:mb-6 md:text-sm">Tautan</h4>
+                            <h4 className="mb-4 text-[10px] font-bold tracking-widest text-slate-500 uppercase md:mb-6 md:text-sm">Tautan Cepat</h4>
                             <ul className="space-y-2 text-xs font-medium text-slate-400 md:space-y-4 md:text-sm">
                                 <li>
-                                    <a href="#" className="hover:text-white">
+                                    <Link href="/search" className="transition-colors hover:text-white">
                                         Cari Barang
-                                    </a>
+                                    </Link>
                                 </li>
                                 <li>
-                                    <a href="#" className="hover:text-white">
-                                        Laporkan
-                                    </a>
+                                    <Link href="/login" className="transition-colors hover:text-white">
+                                        Laporkan Barang
+                                    </Link>
                                 </li>
                                 <li>
-                                    <a href="#" className="hover:text-white">
-                                        Bantuan
-                                    </a>
+                                    <Link href="#" className="transition-colors hover:text-white">
+                                        Pusat Bantuan
+                                    </Link>
                                 </li>
                             </ul>
                         </div>
-                        <div>
-                            <h4 className="mb-4 text-[10px] font-bold tracking-widest text-slate-500 uppercase md:mb-6 md:text-sm">Hukum</h4>
-                            <ul className="space-y-2 text-xs font-medium text-slate-400 md:space-y-4 md:text-sm">
-                                <li>
-                                    <a href="#" className="hover:text-white">
-                                        Privasi
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" className="hover:text-white">
-                                        Ketentuan
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+
+                        {/* 3. Social Section */}
                         <div className="col-span-2 md:col-span-1">
-                            <h4 className="mb-4 text-[10px] font-bold tracking-widest text-slate-500 uppercase md:mb-6 md:text-sm">Social</h4>
+                            <h4 className="mb-4 text-[10px] font-bold tracking-widest text-slate-500 uppercase md:mb-6 md:text-sm">Ikuti Kami</h4>
                             <div className="flex gap-3 md:gap-4">
                                 <SocialLink icon={<Facebook size={18} />} />
                                 <SocialLink icon={<Twitter size={18} />} />
@@ -353,8 +344,10 @@ export default function Search({ items, filters, categories }: Props) {
                             </div>
                         </div>
                     </div>
+
+                    {/* Bottom Copyright */}
                     <div className="border-t border-slate-800 pt-8 text-center text-[10px] text-slate-500 md:pt-10 md:text-xs">
-                        © 2024 Kembaliin Indonesia. All rights reserved.
+                        &copy; {new Date().getFullYear()} Kembaliin Project. Kelompok 6 - Rekayasa Perangkat Lunak 2026.
                     </div>
                 </div>
             </footer>

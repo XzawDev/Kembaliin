@@ -49,7 +49,7 @@ export default function Navbar() {
                         <NavLink href="/search" active={url?.startsWith('/search')}>
                             Cari Barang
                         </NavLink>
-                        <NavLink href="#" active={false}>
+                        <NavLink href="/development" active={false}>
                             Tentang
                         </NavLink>
                     </div>
@@ -186,14 +186,6 @@ export default function Navbar() {
                                     >
                                         <PlusCircle size={16} />
                                         Buat Laporan
-                                    </Link>
-                                    <Link
-                                        href={getDashboardLink()}
-                                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-100 sm:py-3 sm:text-sm"
-                                        onClick={() => setIsMenuOpen(false)}
-                                    >
-                                        <LayoutDashboard size={16} />
-                                        Ke Dashboard
                                     </Link>
                                 </>
                             ) : (

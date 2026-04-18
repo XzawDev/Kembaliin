@@ -116,7 +116,7 @@ class ItemController extends Controller
         $item = Item::where('slug', $slug)->firstOrFail();
 
         // Load relasi yang diperlukan
-        $item->load(['user', 'category', 'images', 'histories.user', 'user:id,name,no_hp,kelas']);
+        $item->load(['user', 'category', 'images', 'histories.user', 'user:id,name,no_hp,kelas,foto']);
 
         if ($item->trashed()) {
             abort(404);
