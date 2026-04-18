@@ -16,6 +16,7 @@ interface Item {
     name: string;
     report_type: string;
     display_status: string;
+    slug: string;
     user: { name: string };
     category?: { name: string };
     created_at: string;
@@ -86,7 +87,7 @@ export default function OfficerDashboard({ auth, stats, recentItems }: Props) {
                                             </div>
                                         </div>
                                         <Link
-                                            href={`/officer/items/${item.id}`}
+                                            href={`/officer/items/${item.slug}`}
                                             className="rounded-lg bg-amber-600 px-3 py-1.5 text-[10px] font-bold text-white uppercase transition-colors hover:bg-amber-700"
                                         >
                                             Proses Sekarang
@@ -144,7 +145,7 @@ export default function OfficerDashboard({ auth, stats, recentItems }: Props) {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <Link
-                                                    href={`/officer/items/${item.id}`}
+                                                    href={`/officer/items/${item.slug}`}
                                                     className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-300 transition-all hover:bg-indigo-50 hover:text-indigo-600"
                                                 >
                                                     <ArrowUpRight size={18} />

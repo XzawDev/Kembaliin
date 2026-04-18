@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
-import { LayoutDashboard, Package, Layers, History, QrCode, LogOut, Menu, X, Bell, Search } from 'lucide-react';
+import { LayoutDashboard, Package, Layers, History, QrCode, LogOut, Menu, X, Bell, Search, Clock } from 'lucide-react';
 
 export default function OfficerLayout({ children }: { children: React.ReactNode }) {
     const { auth } = usePage().props as any;
@@ -32,6 +32,7 @@ export default function OfficerLayout({ children }: { children: React.ReactNode 
                 <nav className="flex-1 space-y-1 px-4">
                     <SidebarLink href="/officer/dashboard" icon={<LayoutDashboard size={20} />} label="Dashboard" />
                     <SidebarLink href="/officer/items" icon={<Package size={20} />} label="All Items" />
+                    <SidebarLink href="/officer/claims" icon={<Search size={20} />} label="Verifikasi Claim" />
                     <SidebarLink href="/officer/categories" icon={<Layers size={20} />} label="Categories" />
                     <SidebarLink href="/officer/history" icon={<History size={20} />} label="History" />
                     <SidebarLink href="/officer/verify" icon={<QrCode size={20} />} label="Scan QR" />

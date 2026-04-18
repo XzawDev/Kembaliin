@@ -11,6 +11,7 @@ interface HistoryItem {
     item: {
         id: number;
         name: string;
+        slug: string;
     } | null;
 }
 
@@ -69,7 +70,7 @@ export default function History({ histories }: Props) {
                                             <td className="px-6 py-4">
                                                 {history.item ? (
                                                     <Link
-                                                        href={`/officer/items/${history.item.id}`}
+                                                        href={`/officer/items/${history.item.slug}`}
                                                         className="font-medium text-indigo-600 hover:underline"
                                                     >
                                                         {history.item.name}

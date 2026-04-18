@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 
 class ClaimController extends Controller
 {
@@ -69,7 +70,7 @@ class ClaimController extends Controller
                         ])
                         ->with('officer_contact', 'Petugas: 08123456789');
                 case Claim::STATUS_PENDING:
-                    return redirect()->route('claim.failed', $item)->with('message', 'Anda sudah mengajukan klaim. Klaim sedang diproses petugas.');
+                    return redirect()->route('claim.pending', $item)->with('message', 'Klaim Anda sedang menunggu verifikasi petugas.');
                 case Claim::STATUS_REJECTED:
                     return redirect()->route('claim.failed', $item)->with('message', 'Klaim Anda ditolak. Silakan hubungi petugas.');
                 default:
@@ -186,7 +187,7 @@ class ClaimController extends Controller
                     ])
                     ->with('officer_contact', $officer_contact);
             } else {
-                return redirect()->route('claim.failed', $item)->with('message', 'Jawaban Anda salah. Klaim akan diproses petugas.');
+                return redirect()->route('claim.pending', $item)->with('message', 'Klaim Anda sedang menunggu verifikasi petugas.');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -455,4 +456,124 @@ class ClaimController extends Controller
             'claims' => $claims,
         ]);
     }
+
+    public function pending(Item $item)
+    {
+        $user = Auth::user();
+        $claim = Claim::where('item_id', $item->id)->where('user_id', $user->id)->where('status', Claim::STATUS_PENDING)->first();
+
+        if (!$claim) {
+            return redirect()->route('items.show', $item->slug)->with('error', 'Tidak ada klaim pending untuk barang ini.');
+        }
+
+        return Inertia::render('Items/ClaimPending', [
+            'item' => $item,
+            'claim' => $claim,
+        ]);
+    }
+
+    public function pendingClaims()
+    {
+        $claims = Claim::with(['item', 'user'])
+            ->where('status', Claim::STATUS_PENDING)
+            ->orderBy('created_at', 'asc')
+            ->paginate(20);
+
+        return Inertia::render('Officer/PendingClaims', ['claims' => $claims]);
+    }
+
+    public function allClaims(Request $request)
+    {
+        $query = Claim::with(['item', 'user']);
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        $claims = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        return Inertia::render('Officer/AllClaims', [
+            'claims' => $claims,
+            'currentStatus' => $request->get('status', 'all'),
+        ]);
+    }
+
+    public function showClaimDetail(Claim $claim)
+    {
+        $claim->load([
+            'item' => function ($q) {
+                $q->with(['user', 'category', 'images']);
+            },
+            'user',
+            'verificationAnswers.question',
+        ]);
+
+        // Transformasi gambar
+        if ($claim->item->images->isNotEmpty()) {
+            $claim->item->images->transform(function ($img) {
+                $img->url = asset('storage/' . $img->image_path);
+                return $img;
+            });
+        }
+
+        return Inertia::render('Officer/ClaimDetail', [
+            'claim' => $claim,
+        ]);
+    }
+
+    public function verifyManual(Request $request, Claim $claim)
+    {
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'admin_notes' => 'nullable|string',
+            'proof_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $claim->status = $request->status;
+        $claim->admin_notes = $request->admin_notes;
+        $claim->verified_by = Auth::id();
+
+        // Upload foto bukti jika ada
+        if ($request->hasFile('proof_image')) {
+            // Hapus file lama jika ada
+            if ($claim->proof_image) {
+                Storage::disk('public')->delete($claim->proof_image);
+            }
+            $path = $request->file('proof_image')->store('claim-proofs', 'public');
+            $claim->proof_image = $path;
+        }
+
+        $claim->save();
+
+        if ($request->status === 'approved') {
+            $item = $claim->item;
+            $item->handling_status = 'diklaim';
+            $item->save();
+        }
+
+        return back()->with('success', 'Klaim berhasil diverifikasi.');
+    }
+
+    public function uploadProof(Request $request, Claim $claim)
+{
+    $request->validate([
+        'proof_image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+    ]);
+
+    // Hanya petugas yang bisa upload, dan claim harus sudah approved
+    if ($claim->status !== 'approved') {
+        return back()->with('error', 'Hanya klaim yang sudah disetujui yang dapat diunggah bukti.');
+    }
+
+    // Hapus file lama jika ada
+    if ($claim->proof_image) {
+        Storage::disk('public')->delete($claim->proof_image);
+    }
+
+    $path = $request->file('proof_image')->store('claim-proofs', 'public');
+    $claim->proof_image = $path;
+    $claim->save();
+
+    return back()->with('success', 'Foto bukti berhasil diunggah.');
+}
 }

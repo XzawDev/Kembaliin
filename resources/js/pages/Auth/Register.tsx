@@ -70,7 +70,7 @@ export default function Register() {
                 {/* Left side (info) */}
                 <div className="relative order-2 hidden w-1/2 overflow-hidden bg-teal-900 md:order-1 md:block">
                     <img
-                        src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=1000&auto=format&fit=crop"
+                        src="/foto_buku.jpg"
                         alt="School Library"
                         className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 ${showInfo ? 'scale-125 blur-md brightness-50' : 'brightness-90 hover:scale-105'}`}
                     />

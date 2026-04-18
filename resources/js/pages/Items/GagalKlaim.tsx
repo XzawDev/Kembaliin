@@ -46,7 +46,7 @@ export default function GagalKlaim({ item, message }: Props) {
                         </p>
                     </div>
 
-                    <div className="overflow-hidden rounded-2xl border border-red-200 bg-white shadow-xl shadow-red-200/50">
+                    <div className="overflow-hidden rounded-2xl border border-red-200 bg-white">
                         {/* Error Message Box */}
                         <div className="border-b border-red-100 bg-red-50/50 p-4 md:p-6">
                             <div className="flex items-start gap-3">
@@ -92,11 +92,11 @@ export default function GagalKlaim({ item, message }: Props) {
                                 </h3>
                                 <div className="grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-3">
                                     <button
-                                        onClick={handleRetry}
+                                        onClick={handleBack}
                                         className="flex items-center justify-center gap-2 rounded-xl bg-indigo-50 px-4 py-2.5 text-xs font-semibold text-indigo-700 transition-all hover:bg-indigo-100 active:scale-95 md:py-3.5 md:text-sm"
                                     >
-                                        <RefreshCw className="h-4 w-4" />
-                                        Coba Klaim Lagi
+                                        <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
+                                        <span className="text-sm font-semibold">Kembali ke Detail Barang</span>
                                     </button>
 
                                     <a
@@ -113,7 +113,7 @@ export default function GagalKlaim({ item, message }: Props) {
                         </div>
 
                         {/* Footer Button */}
-                        <div className="border-t border-red-100 bg-red-50 p-4">
+                        {/* <div className="border-t border-red-100 bg-red-50 p-4">
                             <button
                                 onClick={handleBack}
                                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-white shadow-lg transition-all hover:bg-slate-800 active:scale-[0.98] md:px-6 md:py-4"
@@ -121,7 +121,7 @@ export default function GagalKlaim({ item, message }: Props) {
                                 <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
                                 <span className="text-sm font-semibold md:text-base">Kembali ke Detail Barang</span>
                             </button>
-                        </div>
+                        </div> */}
                     </div>
 
                     <p className="mx-auto mt-6 max-w-[280px] text-center text-[10px] leading-relaxed text-slate-400 md:mt-8 md:max-w-none md:text-xs">

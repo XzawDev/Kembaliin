@@ -9,7 +9,7 @@ class Claim extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['item_id', 'user_id', 'proof_image', 'status', 'verified_by'];
+    protected $fillable = ['item_id', 'user_id', 'proof_image', 'status', 'verified_by', 'admin_notes'];
 
     protected function casts(): array
     {

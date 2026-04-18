@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import OfficerLayout from '@/layouts/OfficerLayout';
 import {
@@ -23,6 +23,7 @@ interface Item {
     description: string | null;
     location: string;
     date: string;
+    slug: string;
     report_type: 'hilang' | 'ditemukan';
     report_status: 'aktif' | 'selesai' | 'ditutup';
     handling_status: 'menunggu_penyerahan' | 'dititipkan_petugas' | 'diklaim' | 'dikembalikan' | null;
@@ -155,12 +156,12 @@ export default function ItemDetail({ item }: Props) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(`/officer/items/${item.id}`);
+        put(`/officer/items/${item.slug}`);
     };
 
     const handleVerifyHandover = () => {
         if (confirm('Verifikasi serah terima? Status akan berubah menjadi "Dititipkan Petugas".')) {
-            router.post(`/officer/items/${item.id}/verify-handover`);
+            router.post(`/officer/items/${item.slug}/verify-handover`);
         }
     };
 
@@ -207,18 +208,28 @@ export default function ItemDetail({ item }: Props) {
         );
     }
 
+    const goBack = useCallback(() => {
+        // Cek apakah ada riwayat sebelumnya (setidaknya satu halaman sebelum ini)
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            // Fallback ke halaman pencarian jika tidak ada riwayat
+            router.get('/search');
+        }
+    }, []);
+
     return (
         <OfficerLayout>
             <Head title={`Item #${item.id} - ${item.name}`} />
 
             <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-8 lg:px-8">
                 <div className="mb-4 sm:mb-6">
-                    <Link
-                        href="/officer/items"
+                    <button
+                        onClick={goBack}
                         className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-800 sm:text-sm"
                     >
                         <ChevronLeft size={14} /> Kembali
-                    </Link>
+                    </button>
                 </div>
 
                 {/* Grid dengan items-stretch agar kolom kiri dan kanan sama tinggi */}

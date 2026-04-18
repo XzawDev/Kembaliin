@@ -113,7 +113,7 @@ export default function Home({ auth, items }: Props) {
                     </motion.p>
 
                     {/* Search Bar - Responsive */}
-                    <motion.div
+                    {/* <motion.div
                         variants={fadeInUp}
                         className="mx-auto flex max-w-4xl flex-col gap-2 rounded-2xl border border-slate-100 bg-white p-2 shadow-xl md:flex-row md:rounded-3xl md:p-3 md:shadow-2xl"
                     >
@@ -128,7 +128,7 @@ export default function Home({ auth, items }: Props) {
                         <button className="w-full rounded-xl bg-teal-600 px-8 py-3 text-sm font-bold text-white transition-all hover:bg-teal-700 md:w-auto md:rounded-2xl md:px-10 md:py-4 md:text-base">
                             Cari
                         </button>
-                    </motion.div>
+                    </motion.div> */}
                 </motion.div>
 
                 {/* Background Decor */}
@@ -231,7 +231,7 @@ export default function Home({ auth, items }: Props) {
                                     onClick={() => setActiveFilter(f)}
                                     className={`rounded-full border px-4 py-1.5 text-[10px] font-bold whitespace-nowrap capitalize transition-all md:px-5 md:py-2 md:text-xs ${
                                         activeFilter === f
-                                            ? 'border-teal-600 bg-teal-600 text-white shadow-lg shadow-teal-100'
+                                            ? 'border-teal-600 bg-teal-600 text-white'
                                             : 'border-slate-200 bg-white text-slate-500 hover:border-teal-600 hover:text-teal-600'
                                     }`}
                                 >
@@ -334,7 +334,7 @@ export default function Home({ auth, items }: Props) {
             </section>
 
             {/* Feature Section */}
-            <section className="py-16 md:py-24">
+            {/* <section className="py-16 md:py-24">
                 <div className="mx-auto max-w-7xl px-4 lg:px-8">
                     <motion.div
                         className="mb-12 text-center md:mb-16"
@@ -377,7 +377,7 @@ export default function Home({ auth, items }: Props) {
                         </motion.div>
                     </motion.div>
                 </div>
-            </section>
+            </section> */}
 
             {/* Footer */}
             <motion.footer
@@ -442,7 +442,7 @@ export default function Home({ auth, items }: Props) {
                         </div>
                     </div>
                     <div className="border-t border-slate-800 pt-8 text-center text-[10px] text-slate-500 md:pt-10 md:text-xs">
-                        © 2024 Kembaliin Indonesia. All rights reserved.
+                        Kembaliin Project. Kelompok 6 - Rekayasa Perangkat Lunak 2026.
                     </div>
                 </div>
             </motion.footer>

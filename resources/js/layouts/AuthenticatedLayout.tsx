@@ -69,7 +69,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
 
                 <div className="space-y-1 border-t border-slate-100 p-4">
                     <SidebarLink href="/" icon={<Home size={20} />} label="Beranda" />
-                    <SidebarLink href="#" icon={<Settings size={20} />} label="Pengaturan" />
+                    <SidebarLink href="/Siswa/pengaturan" icon={<Settings size={20} />} label="Pengaturan" />
                     <button
                         onClick={() => router.post('/logout')}
                         className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-red-500 transition-all hover:bg-red-50"
@@ -98,21 +98,22 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <button className="relative rounded-full p-2 text-slate-400 hover:bg-slate-50">
-                            <Bell size={20} />
-                            <span className="absolute top-2 right-2 h-2 w-2 rounded-full border-2 border-white bg-red-500"></span>
-                        </button>
-                        <div className="mx-1 hidden h-8 w-[1px] bg-slate-200 md:block"></div>
-                        <div className="group flex cursor-pointer items-center gap-3">
-                            <div className="hidden text-right md:block">
-                                <p className="text-sm leading-none font-bold text-slate-900">{auth.user.name}</p>
-                                <p className="mt-1 text-[10px] font-bold text-teal-500 uppercase">{auth.user.role}</p>
-                            </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-600 font-black text-white shadow-lg shadow-teal-50">
-                                {auth.user.name.charAt(0)}
-                            </div>
+                    <div className="group flex cursor-pointer items-center gap-3">
+                        <div className="hidden text-right md:block">
+                            <p className="text-sm leading-none font-bold text-slate-900">{auth.user.name}</p>
+                            <p className="mt-1 text-[10px] font-bold text-teal-500 uppercase">{auth.user.role}</p>
                         </div>
+                        {auth.user.foto ? (
+                            <img
+                                src={`/storage/${auth.user.foto}`}
+                                alt="Profile"
+                                className="h-10 w-10 rounded-xl object-cover shadow-lg shadow-teal-50"
+                            />
+                        ) : (
+                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-teal-600 to-emerald-500 text-[10px] font-bold text-white shadow-sm md:h-9 md:w-9 md:text-sm">
+                                {auth.user.name.charAt(0).toUpperCase()}
+                            </div>
+                        )}
                     </div>
                 </header>
 
