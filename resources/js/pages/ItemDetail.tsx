@@ -28,7 +28,7 @@ interface Item {
     handling_status: 'menunggu_penyerahan' | 'dititipkan_petugas' | 'diklaim' | 'dikembalikan' | null;
     display_status: string;
     qr_code: string | null;
-    user: { id: number; name: string; class?: string; no_hp?: string; avatar_url?: string };
+    user: { id: number; name: string; kelas?: string; no_hp?: string; foto?: string; avatar_url?: string };
     category: { id: number; name: string };
     images: Array<{ id: number; url: string }>;
     histories: Array<{
@@ -262,21 +262,20 @@ export default function ItemDetail({ item }: Props) {
 
                                     {/* Reporter Info */}
                                     <div className="flex items-start gap-4">
-                                        {auth.user.foto ? (
+                                        {item.user.foto ? (
                                             <img
-                                                src={`/storage/${auth.user.foto}`}
-                                                alt={auth.user.name}
+                                                src={`/storage/${item.user.foto}`}
+                                                alt={item.user.name}
                                                 className="h-10 w-10 rounded-full object-cover shadow-lg shadow-teal-50"
                                             />
                                         ) : (
                                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-600 font-black text-white shadow-lg shadow-teal-50">
-                                                {auth.user.name.charAt(0)}
+                                                {item.user.name.charAt(0)}
                                             </div>
                                         )}
                                         <div className="flex-1">
                                             <p className="text-xs font-medium tracking-wider text-slate-400 uppercase">Pelapor</p>
                                             <p className="font-semibold text-slate-900">{item.user.name}</p>
-                                            {item.user.class && <p className="mt-0.5 text-sm text-slate-500">Kelas: {item.user.class}</p>}
                                         </div>
                                     </div>
 

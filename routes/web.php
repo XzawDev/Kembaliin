@@ -13,6 +13,7 @@ use App\Http\Controllers\Item\ClaimController;
 use App\Http\Controllers\Item\QrController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Siswa\SettingsController;
+use App\Http\Controllers\Admin\UserController;
 
 // Admin (officer) controllers
 use App\Http\Controllers\Admin\DashboardController as OfficerDashboardController;
@@ -26,6 +27,10 @@ use Illuminate\Http\Request;
 
 // Redirect root to home
 Route::get('/', fn() => redirect('/home'));
+
+Route::get('/development', function () {
+    return inertia('Development');
+})->name('development');
 
 // Guest routes
 Route::middleware(['guest', 'no-cache'])->group(function () {
@@ -45,7 +50,6 @@ Route::get('/items', fn() => redirect('/search'))->name('items.index');
 
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
-
     // Siswa routes
     Route::get('/Siswa/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -102,6 +106,12 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/claims/{claim}', [ClaimController::class, 'showClaimDetail'])->name('claims.show');
             Route::post('/claims/{claim}/verify', [ClaimController::class, 'verifyManual'])->name('claims.verify');
             Route::post('/claims/{claim}/upload-proof', [ClaimController::class, 'uploadProofPhoto'])->name('claims.upload-proof');
+
+            Route::get('/users', [UserController::class, 'index'])->name('users.index');
+            Route::post('/users', [UserController::class, 'store'])->name('users.store');
+            Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+            Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+            Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
         });
 });
 

@@ -64,7 +64,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
                         active={window.location.pathname === '/siswa/pengajuan'}
                     />
                     <SidebarLink href="/Siswa/laporan" icon={<Package size={20} />} label="Semua Laporan" active={isActive('/Siswa/laporan')} />
-                    <SidebarLink href="#" icon={<Clock size={20} />} label="Riwayat" />
+                    {/* <SidebarLink href="#" icon={<Clock size={20} />} label="Riwayat" /> */}
                 </nav>
 
                 <div className="space-y-1 border-t border-slate-100 p-4">
