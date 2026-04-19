@@ -68,100 +68,89 @@ export default function PengajuanBarang({ claims }: Props) {
         <AuthenticatedLayout>
             <Head title="Pengajuan Barang" />
 
-            <div className="py-6 md:py-12">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="mb-6 flex flex-col gap-1 md:mb-8 md:flex-row md:items-center md:justify-between">
-                        <div>
-                            <h2 className="text-lg leading-tight font-black text-slate-900 md:text-2xl">Pengajuan Klaim Saya</h2>
-                            <p className="mt-1 text-xs text-slate-500 md:text-sm">Pantau status pengembalian barang Anda di sini.</p>
-                        </div>
-                    </div>
-
-                    {/* TABS FILTER (Ukurannya diperkecil di mobile) */}
-                    <div className="hide-scrollbar mb-6 flex overflow-x-auto pb-2 md:mb-8">
-                        <div className="flex w-max gap-1.5 rounded-full border border-slate-100 bg-white p-1.5 shadow-sm md:gap-2">
-                            {(['all', 'pending', 'approved', 'rejected'] as const).map((f) => (
-                                <button
-                                    key={f}
-                                    onClick={() => setFilter(f)}
-                                    className={`rounded-full px-4 py-2 text-xs font-bold whitespace-nowrap transition-all md:px-5 md:py-2.5 md:text-sm ${
-                                        filter === f ? 'bg-teal-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                                    }`}
-                                >
-                                    {f === 'all' && 'Semua Klaim'}
-                                    {f === 'pending' && 'Menunggu'}
-                                    {f === 'approved' && 'Disetujui'}
-                                    {f === 'rejected' && 'Ditolak'}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* DAFTAR KLAIM */}
-                    {filteredClaims.length > 0 ? (
-                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-                            {filteredClaims.map((claim) => {
-                                const statusConfig = getStatusConfig(claim.status);
-                                const imageUrl =
-                                    claim.item.image_url ||
-                                    'https://images.unsplash.com/photo-1544006659-f0b21f04cb1b?q=80&w=800&auto=format&fit=crop';
-
-                                return (
-                                    <div
-                                        key={claim.id}
-                                        onClick={() => setSelectedClaim(claim)}
-                                        className="group cursor-pointer overflow-hidden rounded-2xl border border-slate-100 bg-white p-2.5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50 md:rounded-[2rem] md:p-3"
-                                    >
-                                        <div className="flex items-center gap-3 md:gap-4">
-                                            {/* Thumbnail Gambar (Diperkecil di mobile dari h-24 jadi h-16) */}
-                                            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-50 md:h-24 md:w-24 md:rounded-[1.5rem]">
-                                                <img
-                                                    src={imageUrl}
-                                                    alt={claim.item.name}
-                                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                                />
-                                            </div>
-
-                                            {/* Info Ringkas */}
-                                            <div className="flex flex-1 flex-col py-1">
-                                                <div
-                                                    className={`mb-1.5 inline-flex w-fit items-center gap-1 rounded-full border px-2 py-0.5 text-[8px] font-bold tracking-wider uppercase md:mb-2 md:px-2.5 md:py-1 md:text-[10px] ${statusConfig.color}`}
-                                                >
-                                                    {statusConfig.icon}
-                                                    {statusConfig.label}
-                                                </div>
-                                                <h3 className="line-clamp-1 text-sm font-black text-slate-900 md:text-base">{claim.item.name}</h3>
-                                                <p className="mt-0.5 text-[10px] font-medium text-slate-500 md:mt-1 md:text-xs">
-                                                    {new Date(claim.created_at).toLocaleDateString('id-ID', {
-                                                        day: 'numeric',
-                                                        month: 'short',
-                                                        year: 'numeric',
-                                                    })}
-                                                </p>
-                                            </div>
-
-                                            {/* Panah */}
-                                            <div className="pr-1 text-slate-300 transition-colors group-hover:text-teal-600 md:pr-2">
-                                                <ChevronRight size={18} className="md:h-5 md:w-5" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        /* STATE KOSONG */
-                        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-16 text-center md:rounded-[3rem] md:py-24">
-                            <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 text-slate-300 md:mb-4 md:h-20 md:w-20">
-                                <Package size={32} className="md:h-10 md:w-10" />
-                            </div>
-                            <h3 className="text-base font-bold text-slate-900 md:text-lg">Belum Ada Pengajuan</h3>
-                            <p className="mt-1 max-w-xs text-xs text-slate-500 md:mt-2 md:max-w-sm md:text-sm">
-                                Anda belum memiliki riwayat pengajuan klaim barang.
-                            </p>
-                        </div>
-                    )}
+            {/* Removed: <div className="py-6 md:py-12"> and <div className="mx-auto max-w-7xl px-4..."> */}
+            <div className="mx-auto w-full">
+                {/* Header Section: Matches Dashboard.tsx spacing */}
+                <div className="mb-6 md:mb-8">
+                    <h1 className="text-xl font-bold tracking-tight text-slate-900 md:text-2xl">Pengajuan Klaim Saya</h1>
+                    <p className="mt-1 text-xs text-slate-500 md:text-sm">Pantau status pengembalian barang Anda di sini.</p>
                 </div>
+
+                {/* TABS FILTER */}
+                <div className="hide-scrollbar mb-6 flex overflow-x-auto pb-2">
+                    <div className="flex w-max gap-1.5 rounded-full border border-slate-100 bg-white p-1.5 shadow-sm md:gap-2">
+                        {(['all', 'pending', 'approved', 'rejected'] as const).map((f) => (
+                            <button
+                                key={f}
+                                onClick={() => setFilter(f)}
+                                className={`rounded-full px-4 py-2 text-xs font-bold whitespace-nowrap transition-all md:px-5 md:py-2.5 md:text-sm ${
+                                    filter === f ? 'bg-teal-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                }`}
+                            >
+                                {f === 'all' && 'Semua Klaim'}
+                                {f === 'pending' && 'Menunggu'}
+                                {f === 'approved' && 'Disetujui'}
+                                {f === 'rejected' && 'Ditolak'}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* DAFTAR KLAIM */}
+                {filteredClaims.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+                        {filteredClaims.map((claim) => {
+                            const statusConfig = getStatusConfig(claim.status);
+                            const imageUrl =
+                                claim.item.image_url || 'https://images.unsplash.com/photo-1544006659-f0b21f04cb1b?q=80&w=800&auto=format&fit=crop';
+
+                            return (
+                                <div
+                                    key={claim.id}
+                                    onClick={() => setSelectedClaim(claim)}
+                                    className="group cursor-pointer overflow-hidden rounded-2xl border border-slate-100 bg-white p-2.5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50 md:p-3"
+                                >
+                                    <div className="flex items-center gap-3 md:gap-4">
+                                        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-50 md:h-20 md:w-20">
+                                            <img
+                                                src={imageUrl}
+                                                alt={claim.item.name}
+                                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-1 flex-col py-1">
+                                            <div
+                                                className={`mb-1.5 inline-flex w-fit items-center gap-1 rounded-full border px-2 py-0.5 text-[8px] font-bold tracking-wider uppercase md:text-[10px] ${statusConfig.color}`}
+                                            >
+                                                {statusConfig.icon}
+                                                {statusConfig.label}
+                                            </div>
+                                            <h3 className="line-clamp-1 text-sm font-bold text-slate-900 md:text-base">{claim.item.name}</h3>
+                                            <p className="mt-0.5 text-[10px] font-medium text-slate-500 md:text-xs">
+                                                {new Date(claim.created_at).toLocaleDateString('id-ID', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric',
+                                                })}
+                                            </p>
+                                        </div>
+                                        <ChevronRight size={18} className="text-slate-300 group-hover:text-teal-600" />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    /* STATE KOSONG */
+                    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-16 text-center md:py-24">
+                        <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 text-slate-300">
+                            <Package size={32} />
+                        </div>
+                        <h3 className="text-base font-bold text-slate-900 md:text-lg">Belum Ada Pengajuan</h3>
+                        <p className="mt-1 max-w-xs text-xs text-slate-500 md:text-sm">Anda belum memiliki riwayat pengajuan klaim barang.</p>
+                    </div>
+                )}
             </div>
 
             {/* MODAL DETAIL KLAIM (Sudah dibikin anti-terpotong) */}

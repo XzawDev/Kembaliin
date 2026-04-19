@@ -6,7 +6,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'Kembaliin') }}</title>
 
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">

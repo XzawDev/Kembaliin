@@ -65,6 +65,13 @@ Route::middleware(['auth'])->group(function () {
 
     // Owner detail item (with edit/delete controls)
     Route::get('/siswa/items/{item}', [ItemController::class, 'showForOwner'])->name('siswa.items.show');
+    Route::patch('/siswa/items/{item}/status', [ItemController::class, 'updateStatus'])->name('siswa.items.update-status');
+    Route::get('/items/{item}/edit', [ItemController::class, 'edit'])->name('items.edit');
+    Route::match(['put', 'patch'], '/items/{item}', [ItemController::class, 'update'])->name('items.update');
+    // Hapus item
+    Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
+    // Lihat QR (khusus barang ditemukan)
+    Route::get('/items/{item}/qr', [QrController::class, 'showQr'])->name('items.qr');
 
     // Claim routes
     Route::get('/items/{item}/questions', [ClaimController::class, 'getQuestions'])->name('items.questions');
@@ -114,33 +121,6 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
         });
 });
-
-// Email verification routes
-Route::get('/email/verify', fn() => inertia('Auth/VerifyEmail'))->middleware('auth')->name('verification.notice');
-Route::get('/email/verify/{id}/{hash}', function ($id, $hash) {
-    $user = User::findOrFail($id);
-    if (!hash_equals(sha1($user->getEmailForVerification()), $hash)) {
-        abort(403, 'Link verifikasi tidak valid.');
-    }
-    return inertia('Auth/VerifyEmailPage', ['id' => $id, 'hash' => $hash, 'email' => $user->email]);
-})->name('verification.verify');
-Route::post('/email/verify/{id}/{hash}', function ($id, $hash) {
-    $user = User::findOrFail($id);
-    if (!hash_equals(sha1($user->getEmailForVerification()), $hash)) {
-        return response()->json(['message' => 'Link verifikasi tidak valid.'], 403);
-    }
-    if ($user->hasVerifiedEmail()) {
-        return response()->json(['message' => 'Email sudah diverifikasi.'], 400);
-    }
-    $user->markEmailAsVerified();
-    return response()->json(['message' => 'Email berhasil diverifikasi!']);
-})->name('verification.verify.post');
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
-    return back()->with('success', 'Link verifikasi baru telah dikirim.');
-})
-    ->middleware(['auth', 'throttle:6,1'])
-    ->name('verification.send');
 
 // Public item detail – using slug, must be last to avoid conflicts
 Route::get('/items/{item}', [ItemController::class, 'show'])->name('items.show');

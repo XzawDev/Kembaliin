@@ -49,9 +49,9 @@ export default function Navbar() {
                         <NavLink href="/search" active={url?.startsWith('/search')}>
                             Cari Barang
                         </NavLink>
-                        <NavLink href="/development" active={false}>
+                        {/* <NavLink href="/development" active={false}>
                             Tentang
-                        </NavLink>
+                        </NavLink> */}
                     </div>
 
                     {/* Right side Buttons */}

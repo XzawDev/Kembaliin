@@ -15,6 +15,7 @@ interface Image {
 
 interface Item {
     id: number;
+    slug: string;
     name: string;
     description: string | null;
     category_id: number;
@@ -71,7 +72,7 @@ export default function Edit({ item, categories }: EditProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(`/items/${item.id}`);
+        put(`/items/${item.slug}`);
     };
 
     return (
@@ -179,7 +180,7 @@ export default function Edit({ item, categories }: EditProps) {
                         </button>
                         <button
                             type="button"
-                            onClick={() => router.visit(`/items/${item.id}`)}
+                            onClick={() => router.visit(`/siswa/items/${item.slug}`)}
                             className="rounded-xl border border-slate-200 px-6 py-2 hover:bg-slate-50"
                         >
                             Batal
