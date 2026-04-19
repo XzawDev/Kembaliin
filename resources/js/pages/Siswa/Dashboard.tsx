@@ -95,14 +95,7 @@ export default function Dashboard({ auth, stats, items }: Props) {
                                             {item.user?.name ?? '-'}
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3 text-right md:px-6 md:py-4">
-                                        <Link
-                                            href={`/siswa/items/${item.slug}`}
-                                            className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-                                        >
-                                            <MoreVertical size={18} />
-                                        </Link>
-                                    </td>
+                                    <td className="px-4 py-3 text-right md:px-6 md:py-4"></td>
                                 </tr>
                             ))}
                         </tbody>

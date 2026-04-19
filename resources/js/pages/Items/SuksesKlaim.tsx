@@ -64,6 +64,13 @@ export default function SuksesKlaim({ item, message: initialMessage, contact: in
         return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     };
 
+    const getPelaporWhatsAppLink = () => {
+        if (!contact?.phone) return '#';
+        const phone = formatWA(contact.phone);
+        const message = `Halo, saya ${contact?.name || 'pengklaim'} ingin menanyakan status klaim barang "${item.name}". Terima kasih.`;
+        return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    };
+
     if (loading) {
         return (
             <>
@@ -168,10 +175,12 @@ export default function SuksesKlaim({ item, message: initialMessage, contact: in
                                     </a>
 
                                     <a
-                                        href={`tel:${contact.phone}`}
+                                        href={getPelaporWhatsAppLink()}
+                                        target="_blank"
+                                        rel="noreferrer"
                                         className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-100 active:scale-95 md:py-3.5 md:text-sm"
                                     >
-                                        <Phone className="h-4 w-4" />
+                                        <MessageCircle className="h-4 w-4" />
                                         Hubungi Pelapor
                                     </a>
                                 </div>

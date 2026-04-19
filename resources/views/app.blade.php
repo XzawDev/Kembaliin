@@ -7,7 +7,6 @@
         
 
         <title inertia>{{ config('app.name', 'Kembaliin') }}</title>
-        <title>Kembaliin</title>
 
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">

@@ -131,84 +131,78 @@ export default function CreateItem({ categories }: Props) {
         <AuthenticatedLayout>
             <Head title="Laporkan Barang" />
 
-            <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
-                <div className="mb-6 sm:mb-8">
-                    <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Laporkan Barang</h1>
-                    <p className="mt-1 text-sm text-slate-600">Bantu komunitas menemukan barang yang hilang atau kembali ke pemiliknya.</p>
+            {/* Changed: Removed px-4 py-6 sm:px-6 sm:py-10 to match Dashboard spacing */}
+            <div className="mx-auto max-w-4xl">
+                {/* Header Section: Matches Dashboard.tsx margin bottom */}
+                <div className="mb-6 md:mb-8">
+                    <h1 className="text-xl font-bold tracking-tight text-slate-900 md:text-2xl">Laporkan Barang</h1>
+                    <p className="mt-1 text-xs text-slate-500 md:text-sm">Bantu komunitas menemukan barang yang hilang atau kembali ke pemiliknya.</p>
                 </div>
 
-                <form onSubmit={submit} className="space-y-6 sm:space-y-8">
+                <form onSubmit={submit} className="space-y-6">
                     {/* Report Type Selection Cards */}
                     <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                         <button
                             type="button"
                             onClick={() => handleReportTypeChange('lost')}
-                            className={`relative flex items-start gap-3 rounded-xl border-2 p-3 text-left transition-all duration-200 sm:gap-4 sm:rounded-2xl sm:p-5 ${
+                            className={`relative flex items-start gap-3 rounded-xl border-2 p-3 text-left transition-all duration-200 sm:gap-4 sm:p-5 ${
                                 data.report_type === 'lost'
-                                    ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-50 sm:ring-4'
+                                    ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-50'
                                     : 'border-slate-200 bg-white hover:border-slate-300'
                             }`}
                         >
                             <div
-                                className={`rounded-lg p-2 sm:rounded-xl sm:p-3 ${data.report_type === 'lost' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}
+                                className={`rounded-lg p-2 ${data.report_type === 'lost' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}
                             >
-                                <AlertCircle size={20} className="sm:h-6 sm:w-6" />
+                                <AlertCircle size={20} />
                             </div>
                             <div className="flex-1">
-                                <h3
-                                    className={`text-sm font-bold sm:text-base ${data.report_type === 'lost' ? 'text-indigo-900' : 'text-slate-700'}`}
-                                >
+                                <h3 className={`text-sm font-bold ${data.report_type === 'lost' ? 'text-indigo-900' : 'text-slate-700'}`}>
                                     Saya Kehilangan Barang
                                 </h3>
-                                <p className="mt-0.5 text-xs text-slate-500 sm:mt-1 sm:text-sm">Buat laporan untuk barang Anda yang hilang.</p>
+                                <p className="mt-0.5 text-xs text-slate-500">Buat laporan untuk barang Anda yang hilang.</p>
                             </div>
-                            {data.report_type === 'lost' && (
-                                <CheckCircle2 className="absolute top-2 right-2 h-[18px] w-[18px] text-indigo-600 sm:top-4 sm:right-4 sm:h-5 sm:w-5" />
-                            )}
+                            {data.report_type === 'lost' && <CheckCircle2 className="absolute top-2 right-2 h-4 w-4 text-indigo-600" />}
                         </button>
 
                         <button
                             type="button"
                             onClick={() => handleReportTypeChange('found')}
-                            className={`relative flex items-start gap-3 rounded-xl border-2 p-3 text-left transition-all duration-200 sm:gap-4 sm:rounded-2xl sm:p-5 ${
+                            className={`relative flex items-start gap-3 rounded-xl border-2 p-3 text-left transition-all duration-200 sm:gap-4 sm:p-5 ${
                                 data.report_type === 'found'
-                                    ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-50 sm:ring-4'
+                                    ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-50'
                                     : 'border-slate-200 bg-white hover:border-slate-300'
                             }`}
                         >
                             <div
-                                className={`rounded-lg p-2 sm:rounded-xl sm:p-3 ${data.report_type === 'found' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}
+                                className={`rounded-lg p-2 ${data.report_type === 'found' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}
                             >
-                                <Package size={20} className="sm:h-6 sm:w-6" />
+                                <Package size={20} />
                             </div>
                             <div className="flex-1">
-                                <h3
-                                    className={`text-sm font-bold sm:text-base ${data.report_type === 'found' ? 'text-emerald-900' : 'text-slate-700'}`}
-                                >
+                                <h3 className={`text-sm font-bold ${data.report_type === 'found' ? 'text-emerald-900' : 'text-slate-700'}`}>
                                     Saya Menemukan Barang
                                 </h3>
-                                <p className="mt-0.5 text-xs text-slate-500 sm:mt-1 sm:text-sm">Laporkan barang yang Anda temukan di sekitar.</p>
+                                <p className="mt-0.5 text-xs text-slate-500">Laporkan barang yang Anda temukan.</p>
                             </div>
-                            {data.report_type === 'found' && (
-                                <CheckCircle2 className="absolute top-2 right-2 h-[18px] w-[18px] text-emerald-600 sm:top-4 sm:right-4 sm:h-5 sm:w-5" />
-                            )}
+                            {data.report_type === 'found' && <CheckCircle2 className="absolute top-2 right-2 h-4 w-4 text-emerald-600" />}
                         </button>
                     </div>
 
-                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm sm:rounded-3xl">
-                        <div className="space-y-5 p-4 sm:p-6 md:p-8">
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                        <div className="space-y-5 p-4 md:p-6">
                             {/* Grid Fields */}
-                            <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2">
+                            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                                 <div className="space-y-1">
-                                    <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 sm:text-sm">
-                                        <Package size={14} className="text-slate-400 sm:h-4 sm:w-4" /> Nama Barang
+                                    <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+                                        <Package size={14} className="text-slate-400" /> Nama Barang
                                     </label>
                                     <input
                                         type="text"
                                         placeholder="Contoh: Kunci Motor Honda"
                                         value={data.name}
                                         onChange={(e) => setData('name', e.target.value)}
-                                        className="w-full rounded-lg border-slate-200 bg-slate-50 px-3 py-2 text-sm transition-all outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500 sm:rounded-xl sm:px-4 sm:py-3"
+                                        className="w-full rounded-lg border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500"
                                         required
                                     />
                                     {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}

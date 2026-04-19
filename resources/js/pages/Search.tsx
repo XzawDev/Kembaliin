@@ -335,14 +335,14 @@ export default function Search({ items, filters, categories }: Props) {
                         </div>
 
                         {/* 3. Social Section */}
-                        <div className="col-span-2 md:col-span-1">
+                        {/* <div className="col-span-2 md:col-span-1">
                             <h4 className="mb-4 text-[10px] font-bold tracking-widest text-slate-500 uppercase md:mb-6 md:text-sm">Ikuti Kami</h4>
                             <div className="flex gap-3 md:gap-4">
                                 <SocialLink icon={<Facebook size={18} />} />
                                 <SocialLink icon={<Twitter size={18} />} />
                                 <SocialLink icon={<Instagram size={18} />} />
                             </div>
-                        </div>
+                        </div> */}
                     </div>
 
                     {/* Bottom Copyright */}

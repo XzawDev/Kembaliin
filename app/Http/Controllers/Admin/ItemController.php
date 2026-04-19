@@ -88,6 +88,6 @@ class ItemController extends Controller
     public function showItemByToken($token)
     {
         $item = Item::where('qr_code', $token)->firstOrFail();
-        return redirect()->route('officer.items.show', $item->id);
+        return redirect()->route('officer.items.show', $item->slug);
     }
 }

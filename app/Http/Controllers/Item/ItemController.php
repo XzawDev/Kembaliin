@@ -15,6 +15,7 @@ use App\Enums\ReportStatus;
 use App\Models\ItemHistory;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Claim;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ItemController extends Controller
 {
@@ -158,17 +159,45 @@ class ItemController extends Controller
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
+        // Muat relasi, pastikan 'images' dimuat
         $item->load(['user', 'category', 'images', 'histories.user']);
-        $item->images->transform(fn($img) => ($img->url = asset('storage/' . $img->image_path)));
 
+        // Transformasi URL gambar
+        $item->images->transform(function ($img) {
+            $img->url = asset('storage/' . $img->image_path);
+            return $img;
+        });
+
+        // Logging untuk debug
+        \Log::info('ItemDetailOwner images', [
+            'item_id' => $item->id,
+            'images_count' => $item->images->count(),
+            'first_image_url' => $item->images->first()->url ?? null,
+        ]);
+
+        // Status display
         if ($item->report_type === ReportType::HILANG) {
             $item->display_status = 'hilang';
         } else {
             $item->display_status = $item->handling_status ?? 'menunggu_penyerahan';
         }
 
+        // QR Code Data URI
+        $qrCodeDataUri = null;
+        if ($item->report_type === ReportType::DITEMUKAN && $item->qr_code) {
+            $verificationUrl = route('officer.items.by-token', $item->qr_code);
+            $qrCodeSvg = QrCode::format('svg')->size(300)->margin(1)->generate($verificationUrl);
+            $qrCodeBase64 = base64_encode($qrCodeSvg);
+            $qrCodeDataUri = 'data:image/svg+xml;base64,' . $qrCodeBase64;
+        }
+
         return Inertia::render('Siswa/ItemDetailOwner', [
             'item' => $item,
+            'qrCodeDataUri' => $qrCodeDataUri,
+            'can' => [
+                'edit' => true,
+                'delete' => true,
+            ],
         ]);
     }
 
@@ -235,7 +264,7 @@ class ItemController extends Controller
             'description' => "Item '{$item->name}' telah diperbarui.",
         ]);
 
-        return redirect()->route('items.show', $item->id)->with('success', 'Laporan berhasil diperbarui.');
+        return redirect()->route('siswa.items.show', $item->slug)->with('success', 'Laporan berhasil diperbarui.');
     }
 
     public function destroy(Item $item)
@@ -253,6 +282,21 @@ class ItemController extends Controller
             'description' => "Item '{$item->name}' dihapus oleh pemilik.",
         ]);
 
-        return redirect()->back()->with('success', 'Laporan berhasil dihapus dari tampilan Anda dan publik.');
+        // ✅ Redirect ke daftar laporan, bukan back()
+        return redirect()->route('siswa.laporan')->with('success', 'Laporan berhasil dihapus dari tampilan Anda dan publik.');
+    }
+
+    public function updateStatus(Request $request, Item $item)
+    {
+        if ($item->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $request->validate(['status' => 'required|in:menunggu_penyerahan,sudah_disimpan']);
+
+        $item->handling_status = $request->status;
+        $item->save();
+
+        return back()->with('success', 'Status berhasil diperbarui.');
     }
 }
