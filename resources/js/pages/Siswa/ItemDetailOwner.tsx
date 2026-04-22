@@ -1,7 +1,8 @@
 import React from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { ArrowLeft, Edit3, Trash2, MapPin, Calendar, Tag, History, QrCode, Package, Info } from 'lucide-react';
+import OfficerLayout from '@/layouts/OfficerLayout';
 
 interface ItemImage {
     id: number;
@@ -33,6 +34,9 @@ interface Props {
 }
 
 export default function ItemDetailOwner({ item, qrCodeDataUri }: Props) {
+    const { auth } = usePage().props as any;
+    const userRole = auth?.user?.role;
+    const Layout = userRole === 'petugas' || userRole === 'admin' ? OfficerLayout : AuthenticatedLayout;
     const handleDelete = () => {
         if (confirm('Apakah Anda yakin ingin menghapus laporan ini? Tindakan ini tidak dapat dibatalkan.')) {
             router.delete(`/items/${item.slug}`);

@@ -28,89 +28,106 @@ class ItemController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'category_id' => 'required|exists:categories,id',
-            'report_type' => 'required|in:lost,found',
-            'location' => 'required|string|max:255',
-            'date' => 'required|date',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'questions' => 'nullable|array',
-            'questions.*.question' => 'required_with:questions|string',
-            'questions.*.answer' => 'required_with:questions|string',
-        ]);
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'category_id' => 'required|exists:categories,id',
+        'report_type' => 'required|in:lost,found',
+        'location' => 'required|string|max:255',
+        'date' => 'required|date',
+        'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'questions' => 'nullable|array',
+        'questions.*.question' => 'required_with:questions|string',
+        'questions.*.answer' => 'required_with:questions|string',
+    ]);
 
-        $dbReportType = $validated['report_type'] === 'lost' ? 'hilang' : 'ditemukan';
-        $reportStatus = ReportStatus::AKTIF->value;
+    $dbReportType = $validated['report_type'] === 'lost' ? 'hilang' : 'ditemukan';
+    $reportStatus = ReportStatus::AKTIF->value;
 
-        $item = Item::create([
-            'user_id' => Auth::id(),
-            'category_id' => $validated['category_id'],
-            'report_type' => $dbReportType,
-            'report_status' => $reportStatus,
-            'name' => $validated['name'],
-            'description' => $validated['description'],
-            'location' => $validated['location'],
-            'date' => $validated['date'],
-            'handling_status' => $validated['report_type'] === 'found' ? 'menunggu_penyerahan' : null,
-        ]);
+    $item = Item::create([
+        'user_id' => Auth::id(),
+        'category_id' => $validated['category_id'],
+        'report_type' => $dbReportType,
+        'report_status' => $reportStatus,
+        'name' => $validated['name'],
+        'description' => $validated['description'],
+        'location' => $validated['location'],
+        'date' => $validated['date'],
+        'handling_status' => $validated['report_type'] === 'found' ? 'menunggu_penyerahan' : null,
+    ]);
 
-        // Upload gambar
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('item-images', 'public');
-                $item->images()->create(['image_path' => $path]);
-            }
+    // Upload gambar
+    if ($request->hasFile('images')) {
+        foreach ($request->file('images') as $image) {
+            $path = $image->store('item-images', 'public');
+            $item->images()->create(['image_path' => $path]);
+        }
+    }
+
+    $user = Auth::user();
+    $isOfficer = in_array($user->role, ['petugas', 'admin']);
+
+    if ($validated['report_type'] === 'found') {
+        // Generate QR code (tetap dibuat untuk identitas)
+        $token = Str::uuid()->toString();
+        $item->qr_code = $token;
+
+        // Jika petugas/admin yang membuat, langsung verifikasi
+        if ($isOfficer) {
+            $item->verified_by = $user->id;
+            $item->handling_status = 'dititipkan_petugas'; // atau status lain yang sesuai
         }
 
-        if ($validated['report_type'] === 'found') {
-            // Generate QR code
-            $token = Str::uuid()->toString();
-            $item->qr_code = $token;
-            $item->save();
+        $item->save();
 
-            // Simpan pertanyaan verifikasi
-            $questions = $request->input('questions', []);
-            $savedCount = 0;
-            if (is_array($questions) && count($questions) > 0) {
-                foreach ($questions as $q) {
-                    if (!empty($q['question']) && !empty($q['answer'])) {
-                        try {
-                            $item->verificationQuestions()->create([
-                                'question' => $q['question'],
-                                'answer_hash' => Hash::make($q['answer']),
-                            ]);
-                            $savedCount++;
-                        } catch (\Exception $e) {
-                            \Log::error('Gagal simpan pertanyaan: ' . $e->getMessage());
-                        }
+        // Simpan pertanyaan verifikasi (tetap disimpan untuk keperluan klaim nanti)
+        $questions = $request->input('questions', []);
+        $savedCount = 0;
+        if (is_array($questions) && count($questions) > 0) {
+            foreach ($questions as $q) {
+                if (!empty($q['question']) && !empty($q['answer'])) {
+                    try {
+                        $item->verificationQuestions()->create([
+                            'question' => $q['question'],
+                            'answer_hash' => Hash::make($q['answer']),
+                        ]);
+                        $savedCount++;
+                    } catch (\Exception $e) {
+                        \Log::error('Gagal simpan pertanyaan: ' . $e->getMessage());
                     }
                 }
             }
-
-            \Log::info('Found item created', [
-                'item_id' => $item->id,
-                'user_id' => Auth::id(),
-                'report_type' => $item->report_type,
-                'questions_received' => count($questions),
-                'questions_saved' => $savedCount,
-            ]);
-
-            return redirect()->route('items.qr', $item->slug)->with('success', 'Barang ditemukan berhasil dilaporkan. Tunjukkan QR code ke petugas.');
         }
 
-        // Laporan barang hilang
-        ItemHistory::create([
+        \Log::info('Found item created', [
             'item_id' => $item->id,
             'user_id' => Auth::id(),
-            'action' => 'created item',
-            'description' => "Membuat laporan barang {$item->name} (Hilang)",
+            'role' => $user->role,
+            'auto_verified' => $isOfficer,
+            'questions_saved' => $savedCount,
         ]);
 
-        return redirect()->route('dashboard')->with('success', 'Laporan barang hilang berhasil dikirim.');
+        // Redirect berdasarkan role
+        if ($isOfficer) {
+            return redirect()->route('siswa.items.show', $item->slug)
+                ->with('success', 'Barang ditemukan berhasil dilaporkan dan otomatis diverifikasi.');
+        }
+
+        return redirect()->route('items.qr', $item->slug)
+            ->with('success', 'Barang ditemukan berhasil dilaporkan. Tunjukkan QR code ke petugas.');
     }
+
+    // Laporan barang hilang (tidak berubah)
+    ItemHistory::create([
+        'item_id' => $item->id,
+        'user_id' => Auth::id(),
+        'action' => 'created item',
+        'description' => "Membuat laporan barang {$item->name} (Hilang)",
+    ]);
+
+    return redirect()->route('dashboard')->with('success', 'Laporan barang hilang berhasil dikirim.');
+}
 
     public function show($slug)
     {

@@ -16,6 +16,7 @@ import {
     ShieldCheck,
     CheckCircle2,
     Users,
+    PlusCircle,
 } from 'lucide-react';
 
 export default function OfficerLayout({ children }: { children: React.ReactNode }) {
@@ -61,6 +62,7 @@ export default function OfficerLayout({ children }: { children: React.ReactNode 
                         label="Dashboard"
                         active={isActive('/officer/dashboard')}
                     />
+                    <SidebarLink href="/items/create" icon={<PlusCircle size={20} />} label="Buat Laporan" active={isActive('/items/create')} />
                     <SidebarLink href="/officer/verify" icon={<QrCode size={20} />} label="Scan QR Barang" active={isActive('/officer/verify')} />
                     <SidebarLink
                         href="/officer/claims"
@@ -71,7 +73,7 @@ export default function OfficerLayout({ children }: { children: React.ReactNode 
                     <SidebarLink href="/officer/items" icon={<Package size={20} />} label="Semua Barang" active={isActive('/officer/items')} />
                     <SidebarLink href="/officer/categories" icon={<Layers size={20} />} label="Kategori" active={isActive('/officer/categories')} />
                     <SidebarLink href="/officer/history" icon={<History size={20} />} label="Riwayat" active={isActive('/officer/history')} />
-                    <SidebarLink href="/officer/users" icon={<Users size={20} />} label="Manajemen User" />
+                    <SidebarLink href="/officer/users" icon={<Users size={20} />} label="Manajemen User" active={isActive('/officer/users')} />
                 </nav>
 
                 {/* Bottom Section */}

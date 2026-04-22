@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { Upload, X, MapPin, Calendar, Tag, FileText, Package, AlertCircle, CheckCircle2, HelpCircle, Plus, Minus } from 'lucide-react';
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
+import OfficerLayout from '@/layouts/OfficerLayout';
 
 interface Category {
     id: number;
@@ -28,6 +29,9 @@ export default function CreateItem({ categories }: Props) {
         images: [] as File[],
         questions: [] as Question[], // ← source of truth
     });
+    const { auth } = usePage().props as any;
+    const userRole = auth?.user?.role;
+    const Layout = userRole === 'petugas' || userRole === 'admin' ? OfficerLayout : AuthenticatedLayout;
 
     const [previews, setPreviews] = useState<string[]>([]);
 
@@ -128,7 +132,7 @@ export default function CreateItem({ categories }: Props) {
     };
 
     return (
-        <AuthenticatedLayout>
+        <Layout>
             <Head title="Laporkan Barang" />
 
             {/* Changed: Removed px-4 py-6 sm:px-6 sm:py-10 to match Dashboard spacing */}
@@ -392,6 +396,6 @@ export default function CreateItem({ categories }: Props) {
                     </div>
                 </form>
             </div>
-        </AuthenticatedLayout>
+        </Layout>
     );
 }
