@@ -40,6 +40,28 @@ class ItemController extends Controller
         ]);
     }
 
+    public function restore(Item $item)
+    {
+        $item->restore();
+        ItemHistory::create([
+            'item_id' => $item->id,
+            'user_id' => Auth::id(),
+            'action' => 'restored',
+            'description' => "Item '{$item->name}' dipulihkan oleh petugas.",
+        ]);
+        return back()->with('success', 'Item restored.');
+    }
+
+    public function forceDelete(Item $item)
+    {
+        // Hapus gambar terkait dari storage
+        foreach ($item->images as $image) {
+            \Storage::disk('public')->delete($image->image_path);
+        }
+        $item->forceDelete();
+        return back()->with('success', 'Item permanently deleted.');
+    }
+
     public function updateItem(Request $request, Item $item)
     {
         $validated = $request->validate([

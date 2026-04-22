@@ -44,7 +44,7 @@ export default function ItemDetailOwner({ item, qrCodeDataUri }: Props) {
     };
 
     return (
-        <AuthenticatedLayout>
+        <Layout>
             <Head title={`Detail Laporan: ${item.name}`} />
 
             <div className="mx-auto max-w-6xl">
@@ -217,7 +217,7 @@ export default function ItemDetailOwner({ item, qrCodeDataUri }: Props) {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </Layout>
     );
 }
 
