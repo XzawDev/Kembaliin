@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { X, Upload } from 'lucide-react';
+import OfficerLayout from '@/layouts/OfficerLayout';
 
 interface Category {
     id: number;
@@ -30,6 +31,8 @@ interface EditProps {
 }
 
 export default function Edit({ item, categories }: EditProps) {
+    const { auth } = usePage().props as any;
+    const Layout = auth?.user?.role === 'petugas' || auth?.user?.role === 'admin' ? OfficerLayout : AuthenticatedLayout;
     const { data, setData, put, processing, errors } = useForm({
         name: item.name,
         description: item.description || '',
@@ -76,7 +79,7 @@ export default function Edit({ item, categories }: EditProps) {
     };
 
     return (
-        <AuthenticatedLayout>
+        <Layout>
             <Head title="Edit Laporan" />
             <div className="mx-auto max-w-3xl">
                 <h1 className="mb-6 text-2xl font-bold">Edit Laporan Barang</h1>
@@ -188,6 +191,6 @@ export default function Edit({ item, categories }: EditProps) {
                     </div>
                 </form>
             </div>
-        </AuthenticatedLayout>
+        </Layout>
     );
 }

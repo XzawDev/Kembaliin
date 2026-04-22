@@ -113,6 +113,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/claims/{claim}', [ClaimController::class, 'showClaimDetail'])->name('claims.show');
             Route::post('/claims/{claim}/verify', [ClaimController::class, 'verifyManual'])->name('claims.verify');
             Route::post('/claims/{claim}/upload-proof', [ClaimController::class, 'uploadProofPhoto'])->name('claims.upload-proof');
+            Route::patch('/items/{item}/restore', [OfficerItemController::class, 'restore'])->name('items.restore');
+            Route::delete('/items/{item}/force', [OfficerItemController::class, 'forceDelete'])->name('items.force-delete');
 
             Route::get('/users', [UserController::class, 'index'])->name('users.index');
             Route::post('/users', [UserController::class, 'store'])->name('users.store');
