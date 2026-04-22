@@ -347,7 +347,7 @@ export default function Search({ items, filters, categories }: Props) {
 
                     {/* Bottom Copyright */}
                     <div className="border-t border-slate-800 pt-8 text-center text-[10px] text-slate-500 md:pt-10 md:text-xs">
-                        &copy; {new Date().getFullYear()} Kembaliin Project. Kelompok 6 - Rekayasa Perangkat Lunak 2026.
+                        &copy; {new Date().getFullYear()} Kembaliin Project. Kelompok 5 - Rekayasa Perangkat Lunak 2026.
                     </div>
                 </div>
             </footer>
